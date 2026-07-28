@@ -60,6 +60,45 @@ const indexHtml = readDist("index.html");
 await assertValidHtml(indexHtml, "dist/index.html");
 const indexDocument = new JSDOM(indexHtml).window.document;
 
+const scripts = [...indexDocument.querySelectorAll("script")];
+assert(scripts.length === 2, "expected one JSON-LD and one application script");
+assert(
+  scripts.every((script) => {
+    const type = script.getAttribute("type");
+    return (
+      (type === "application/ld+json" && !script.hasAttribute("src")) ||
+      (type === "module" &&
+        /^\/assets\/index-[A-Za-z0-9_-]+\.js$/u.test(
+          script.getAttribute("src") ?? "",
+        ))
+    );
+  }),
+  "unexpected inline or external executable script",
+);
+assert(
+  [...indexDocument.querySelectorAll("*")].every((element) =>
+    [...element.attributes].every((attribute) => !/^on/iu.test(attribute.name)),
+  ),
+  "inline event handlers are forbidden",
+);
+
+const applicationScript = scripts.find(
+  (script) => script.getAttribute("type") === "module",
+);
+assert(applicationScript !== undefined, "application module script is missing");
+const applicationScriptPath = applicationScript
+  .getAttribute("src")
+  ?.replace(/^\//u, "");
+assert(
+  applicationScriptPath !== undefined,
+  "application script path is missing",
+);
+const applicationJavaScript = readDist(applicationScriptPath);
+assert(
+  !/\beval\s*\(|\bFunction\s*\(/u.test(applicationJavaScript),
+  "application JavaScript contains dynamic code generation",
+);
+
 const title = exactlyOne(indexDocument, "title", "title");
 assert(title.textContent?.trim() === expectedTitle, "unexpected title text");
 
@@ -173,6 +212,7 @@ for (const selector of [
 }
 
 for (const file of [
+  "_headers",
   "404.html",
   "favicon.svg",
   "robots.txt",
@@ -181,6 +221,33 @@ for (const file of [
   "og/ssh-key-pair-matcher.png",
 ]) {
   assert(statSync(resolve(distPath, file)).isFile(), `missing dist/${file}`);
+}
+
+const headersFile = readDist("_headers");
+for (const requiredPolicy of [
+  "default-src 'self'",
+  "script-src 'self'",
+  "connect-src 'none'",
+  "object-src 'none'",
+  "base-uri 'none'",
+  "form-action 'none'",
+  "frame-ancestors 'none'",
+  "Referrer-Policy: no-referrer",
+  "X-Content-Type-Options: nosniff",
+  "X-Frame-Options: DENY",
+  "Permissions-Policy:",
+  "Cross-Origin-Opener-Policy: same-origin",
+]) {
+  assert(
+    headersFile.includes(requiredPolicy),
+    `static response policy is missing: ${requiredPolicy}`,
+  );
+}
+for (const forbiddenPolicy of ["'unsafe-inline'", "'unsafe-eval'"]) {
+  assert(
+    !headersFile.includes(forbiddenPolicy),
+    `static response policy must not contain ${forbiddenPolicy}`,
+  );
 }
 
 const socialImage = readFileSync(

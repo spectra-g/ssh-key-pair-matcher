@@ -5,9 +5,10 @@ OpenSSH private key belong to the same pair.
 
 The repository contains the reproducible Vite/TypeScript baseline, the
 browser-local matching engine, and the complete semantic matcher interaction
-from Steps 01–05. It includes the finished responsive light/dark visual system,
+from Steps 01–07. It includes the finished responsive light/dark visual system,
 self-hosted fonts, non-persistent theme control, deterministic visual baselines,
-and the crawlable technical guidance and metadata for launch.
+crawlable technical guidance and metadata, privacy audits, and a static
+production security policy.
 
 ## Privacy contract
 
@@ -29,10 +30,10 @@ disposable fixtures committed under `tests/fixtures/`.
 - **No persistence:** the application does not write keys, results, or theme
   choices to cookies, browser storage, IndexedDB, Cache Storage, URLs, or
   history.
-- **Outbound connections are release-blocked:** Step 07 adds the static Pages
-  Content Security Policy with `connect-src 'none'` and `form-action 'none'`.
-  Until that deployment policy lands, the browser audit proves the application
-  itself makes no connection or form-navigation attempt.
+- **Outbound connections are release-blocked:** the static Pages Content
+  Security Policy sets `connect-src 'none'` and `form-action 'none'`; browser
+  audits also prove the application itself makes no connection or
+  form-navigation attempt.
 - **The implementation is auditable:** source, disposable fixtures, and privacy
   tests are available in the
   [public GitHub repository](https://github.com/spectra-g/ssh-key-pair-matcher).
@@ -86,6 +87,19 @@ npm run preview
 ```
 
 Vite writes the static deployment artifact to `dist/`.
+
+## Production security policy
+
+Cloudflare Pages reads `public/_headers` from the built `dist/_headers`
+artifact. It restricts scripts, styles, fonts, images, connections, forms,
+framing, browser capabilities, referrers, and MIME sniffing; it also gives only
+Vite's content-hashed assets immutable caching. The canonical domain remains
+indexable, while the production and branch `pages.dev` aliases receive
+`X-Robots-Tag: noindex`.
+
+These rules apply only to static Pages responses. If a Pages Function is ever
+added, it must set equivalent response headers itself; `_headers` does not
+apply to Function-generated responses.
 
 ## Quality gates
 
