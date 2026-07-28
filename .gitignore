@@ -1,0 +1,27 @@
+# Dependencies and generated output
+node_modules/
+dist/
+coverage/
+.vitest/
+playwright-report/
+test-results/
+.lighthouseci/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# Editors and local agents
+.idea/
+*.iml
+.vscode/
+.codex/
+planning/
+
+# Operating-system and tool artifacts
+.DS_Store
+Thumbs.db
+*.log
+*.tsbuildinfo
