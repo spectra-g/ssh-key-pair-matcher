@@ -3,9 +3,10 @@
 A small, static browser tool for checking whether an SSH public key and an
 OpenSSH private key belong to the same pair.
 
-The repository currently contains the reproducible Vite and TypeScript
-baseline from Step 01. Key parsing and the complete user interface are
-implemented in later planned steps.
+The repository contains the reproducible Vite/TypeScript baseline and the
+browser-local matching engine from Steps 01–02. The complete user interface is
+implemented in later planned steps, so the current page remains the semantic
+baseline rather than the finished matcher.
 
 ## Privacy contract
 
@@ -89,6 +90,34 @@ Individual scripts are available for focused work:
 - `npm run test:privacy` — check the baseline for third-party requests and
   persistence
 - `npm run test:lighthouse` — run local Lighthouse CI assertions
+
+Re-check the committed disposable SSH fixtures against the operating system's
+independent OpenSSH implementation:
+
+```sh
+./scripts/verify-fixtures.sh
+```
+
+## Matching engine
+
+The modules under `src/core/` parse OpenSSH public lines and the outer header of
+OpenSSH v1 private-key containers. They support Ed25519, RSA, and ECDSA P-256,
+P-384, and P-521. Encrypted OpenSSH private keys can be matched without a
+passphrase because their public component is part of the unencrypted outer
+container; the private payload is never decrypted.
+
+Inputs are capped at 64 KiB and decoded key blobs at 32 KiB. Parsing uses
+bounded SSH wire reads, canonical base64 and mpint validation, exact algorithm
+structure checks, and full-buffer consumption. Unsupported PKCS#1, PKCS#8, PEM
+EC, PuTTY PPK, certificate, security-key/FIDO, and multi-key container formats
+are rejected with fixed messages that do not include pasted material.
+
+SHA-256 is the primary fingerprint. MD5 is calculated with the pinned,
+browser-compatible `@noble/hashes` package and displayed solely for legacy SSH
+fingerprint comparison; MD5 is not a security recommendation.
+
+All committed keys under `tests/fixtures/` are disposable public test material
+generated independently with `ssh-keygen`. Never authorize or reuse them.
 
 ## Project shape
 

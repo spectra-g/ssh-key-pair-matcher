@@ -1,0 +1,9 @@
+fixture	key_type	bits	sha256	md5	encrypted
+ecdsa-p256-a	ecdsa-sha2-nistp256	256	SHA256:BNlzYTaRGB49/EalWaeVxK0OZ2RUu1x+fCoqYrRqUtk	MD5:db:5c:5d:da:45:a4:f8:ce:11:10:4c:dc:13:fe:9d:17	false
+ecdsa-p256-b	ecdsa-sha2-nistp256	256	SHA256:G735TICiClSL13caGjB/UcTsaihJKkhmX6Igru41JqM	MD5:a8:10:9f:79:a1:1b:a6:09:82:fa:53:b6:27:fe:7b:a9	false
+ecdsa-p384-a	ecdsa-sha2-nistp384	384	SHA256:l63RJjB5qWppsblXFQd6YlLVkJxDDt/C8NIi5OEXkqU	MD5:a9:18:60:1e:8c:e8:b8:8a:51:0e:b9:47:85:28:4c:16	false
+ecdsa-p521-a	ecdsa-sha2-nistp521	521	SHA256:FEDaGc3wN0i1HowUp5pvCtM6XCLkwQyhy/gqlT0blHg	MD5:ff:f8:ae:1b:33:0b:31:ab:14:99:43:d0:a6:88:0a:2d	false
+ed25519-a	ssh-ed25519	256	SHA256:HYlVUdTA8RgiZHuuLxoktofQHNHu9yQPnSWIPeHz93E	MD5:66:c2:f9:20:5d:2b:f8:b7:92:f9:10:cf:31:d7:ea:dc	false
+ed25519-b-encrypted	ssh-ed25519	256	SHA256:+QBBNChnG8jVlHQni6ySOWqE8iQ1185vP6WeuyUb2I8	MD5:46:30:66:86:53:60:61:1e:3e:03:39:16:de:94:96:53	true
+rsa-2048-a	ssh-rsa	2048	SHA256:Lc55PDafddonWY1awMmFjWAa6OANgUp3ybtyPRwfkeQ	MD5:72:4f:b7:83:1c:6a:80:94:db:ed:42:6b:b7:e5:0f:b0	false
+rsa-3072-b-encrypted	ssh-rsa	3072	SHA256:THHFzT5ysNCmUlsxqbLcqyOiqIPtLLfOOpqhOlnJPI4	MD5:16:99:a5:1f:27:0e:9b:f0:85:9c:1e:e9:d9:9b:c9:25	true
