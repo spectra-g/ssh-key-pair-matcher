@@ -18,14 +18,147 @@
     <main>
       <h1>SSH Key Pair Matcher</h1>
       <p>
-        A focused browser tool for checking whether an SSH public key and
-        private key belong to the same pair.
+        Check whether an SSH public key and OpenSSH private key belong to the
+        same pair.
       </p>
-      <p class="trust">Your keys never leave this browser.</p>
-      <p id="app-status" role="status">
-        The reproducible project baseline is ready. Key matching arrives in a
-        later implementation step.
-      </p>
+
+      <section class="trust-panel" aria-labelledby="privacy-heading">
+        <h2 id="privacy-heading">Your keys never leave this browser</h2>
+        <p>
+          Matching happens locally in this tab. Nothing is uploaded or stored.
+        </p>
+      </section>
+
+      <form
+        id="matcher-form"
+        aria-label="SSH key pair matcher"
+        novalidate
+        autocomplete="off"
+      >
+        <div class="field">
+          <label for="public-key">Public key</label>
+          <p id="public-key-hint" class="field-hint">
+            Paste one OpenSSH public key line.
+          </p>
+          <textarea
+            id="public-key"
+            rows="5"
+            spellcheck="false"
+            autocorrect="off"
+            autocapitalize="none"
+            autocomplete="off"
+            aria-describedby="public-key-hint public-key-error"
+            aria-invalid="false"
+          ></textarea>
+          <p id="public-key-error" class="field-error" role="alert" hidden></p>
+        </div>
+
+        <div class="field">
+          <label for="private-key">Private key</label>
+          <p id="private-key-hint" class="field-hint">
+            Paste an OpenSSH private key, encrypted or unencrypted.
+          </p>
+          <textarea
+            id="private-key"
+            rows="8"
+            spellcheck="false"
+            autocorrect="off"
+            autocapitalize="none"
+            autocomplete="new-password"
+            aria-describedby="private-key-hint private-key-error"
+            aria-invalid="false"
+          ></textarea>
+          <p id="private-key-error" class="field-error" role="alert" hidden></p>
+        </div>
+
+        <div class="actions">
+          <button
+            id="check-key-pair"
+            type="submit"
+            aria-describedby="submit-help"
+            disabled
+          >
+            Check key pair
+          </button>
+          <button id="wipe-keys" type="button">Wipe keys</button>
+        </div>
+        <p id="submit-help" class="field-hint">
+          Paste both keys to enable checking.
+        </p>
+      </form>
+
+      <p
+        id="app-status"
+        class="status"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      ></p>
+
+      <section
+        id="match-result"
+        class="result"
+        aria-labelledby="result-summary"
+        aria-live="polite"
+        aria-atomic="true"
+        tabindex="-1"
+        hidden
+      >
+        <h2 id="result-summary"></h2>
+        <p id="result-description"></p>
+        <div class="result-details">
+          <section aria-labelledby="public-result-heading">
+            <h3 id="public-result-heading">Public key</h3>
+            <dl>
+              <div>
+                <dt>Algorithm</dt>
+                <dd id="public-algorithm"></dd>
+              </div>
+              <div>
+                <dt>Key size</dt>
+                <dd id="public-key-size"></dd>
+              </div>
+              <div>
+                <dt>SHA-256 fingerprint</dt>
+                <dd id="public-sha256"></dd>
+              </div>
+              <div>
+                <dt>MD5 fingerprint</dt>
+                <dd id="public-md5"></dd>
+              </div>
+            </dl>
+          </section>
+          <section aria-labelledby="private-result-heading">
+            <h3 id="private-result-heading">Private key</h3>
+            <dl>
+              <div>
+                <dt>Algorithm</dt>
+                <dd id="private-algorithm"></dd>
+              </div>
+              <div>
+                <dt>Key size</dt>
+                <dd id="private-key-size"></dd>
+              </div>
+              <div>
+                <dt>SHA-256 fingerprint</dt>
+                <dd id="private-sha256"></dd>
+              </div>
+              <div>
+                <dt>MD5 fingerprint</dt>
+                <dd id="private-md5"></dd>
+              </div>
+              <div>
+                <dt>Encrypted</dt>
+                <dd id="private-encrypted"></dd>
+              </div>
+            </dl>
+          </section>
+        </div>
+        <p class="md5-note">
+          MD5 is shown only for compatibility identification, not as a security
+          recommendation.
+        </p>
+      </section>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>

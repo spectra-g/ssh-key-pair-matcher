@@ -1,9 +1,6 @@
-export function initializePage(pageDocument: Document): void {
-  const status = pageDocument.querySelector<HTMLElement>("#app-status");
+import { initializeMatcher } from "./ui/matcher-controller";
+import type { MatcherController } from "./ui/matcher-controller";
 
-  if (status === null) {
-    throw new Error("The page status element is missing.");
-  }
-
-  status.dataset["enhanced"] = "true";
+export function initializePage(pageDocument: Document): MatcherController {
+  return initializeMatcher(pageDocument);
 }

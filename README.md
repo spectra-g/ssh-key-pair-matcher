@@ -3,10 +3,10 @@
 A small, static browser tool for checking whether an SSH public key and an
 OpenSSH private key belong to the same pair.
 
-The repository contains the reproducible Vite/TypeScript baseline and the
-browser-local matching engine from Steps 01–02. The complete user interface is
-implemented in later planned steps, so the current page remains the semantic
-baseline rather than the finished matcher.
+The repository contains the reproducible Vite/TypeScript baseline, the
+browser-local matching engine, and the complete semantic matcher interaction
+from Steps 01–03. The visual system and supporting launch content are delivered
+in later planned steps, so the current styling is intentionally functional.
 
 ## Privacy contract
 
@@ -15,8 +15,8 @@ no API, runtime third parties, analytics, storage, or service worker. Key
 material must never enter URLs, logs, browser storage, build output, or network
 requests.
 
-Do not use real user keys during development. Tests added in later steps use
-only clearly labelled, disposable fixtures committed under `tests/fixtures/`.
+Do not use real user keys during development. Tests use only clearly labelled,
+disposable fixtures committed under `tests/fixtures/`.
 
 ## Prerequisites
 
@@ -115,6 +115,11 @@ are rejected with fixed messages that do not include pasted material.
 SHA-256 is the primary fingerprint. MD5 is calculated with the pinned,
 browser-compatible `@noble/hashes` package and displayed solely for legacy SSH
 fingerprint comparison; MD5 is not a security recommendation.
+
+The semantic form in `index.html` is progressively enhanced by
+`src/ui/matcher-controller.ts`. Checking occurs only after explicit submission.
+Changing either input invalidates old results, while **Wipe keys**, `pagehide`,
+and back-forward-cache restoration clear the key fields and derived output.
 
 All committed keys under `tests/fixtures/` are disposable public test material
 generated independently with `ssh-keygen`. Never authorize or reuse them.
