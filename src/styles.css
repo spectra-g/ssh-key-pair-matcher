@@ -355,6 +355,11 @@ h1 span {
   line-height: 1.4;
 }
 
+.privacy-status {
+  color: var(--accent-strong);
+  font-weight: 760;
+}
+
 .trust-panel a {
   color: var(--accent-strong);
   font-weight: 700;

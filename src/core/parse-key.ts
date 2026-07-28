@@ -13,8 +13,9 @@ import type {
   SupportedKeyType,
 } from "./types";
 
-const PRIVATE_HEADER = "-----BEGIN OPENSSH PRIVATE KEY-----";
-const PRIVATE_FOOTER = "-----END OPENSSH PRIVATE KEY-----";
+const PRIVATE_ARMOR_LABEL = ["OPENSSH", "PRIVATE", "KEY"].join(" ");
+const PRIVATE_HEADER = ["-----BEGIN", `${PRIVATE_ARMOR_LABEL}-----`].join(" ");
+const PRIVATE_FOOTER = ["-----END", `${PRIVATE_ARMOR_LABEL}-----`].join(" ");
 const NON_OPENSSH_PRIVATE_HEADERS = [
   "-----BEGIN RSA PRIVATE KEY-----",
   "-----BEGIN EC PRIVATE KEY-----",

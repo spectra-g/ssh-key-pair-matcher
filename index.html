@@ -208,7 +208,10 @@
         <div>
           <h2 id="privacy-heading">Your keys never leave this browser</h2>
           <p>
-            Matching happens locally in this tab. Nothing is uploaded or stored.
+            <strong class="privacy-status"
+              >Local-only · No uploads · No storage.</strong
+            >
+            Matching happens in this tab.
             <a href="__REPOSITORY_URL__">Open source — inspect the code.</a>
           </p>
         </div>
@@ -304,7 +307,7 @@
             <textarea
               id="private-key"
               rows="8"
-              placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
+              placeholder="Paste the complete OpenSSH private key here"
               spellcheck="false"
               autocorrect="off"
               autocapitalize="none"
@@ -556,12 +559,19 @@ ssh-keygen -lf ~/.ssh/id_ed25519.pub -E sha256</code></pre>
           aria-labelledby="privacy-design"
         >
           <div>
-            <h2 id="privacy-design">Privacy and open-source design</h2>
+            <p class="eyebrow">Privacy and open-source design</p>
+            <h2 id="privacy-design">How privacy is enforced</h2>
             <p>
-              The matcher runs entirely in the loaded browser tab. It has no
-              account, API, analytics, advertising, runtime third-party assets,
-              key history, or browser-storage feature. Checking and wiping do
-              not submit a form or add key material to the page URL.
+              The matcher has no server or API: parsing, fingerprints, and
+              comparison all run in the loaded browser tab. It loads no runtime
+              third parties, analytics, advertising, or remote assets.
+            </p>
+            <p>
+              Key material and theme choices are not persisted in cookies,
+              browser storage, IndexedDB, Cache Storage, URLs, or history. A
+              release security gate adds a Content Security Policy that blocks
+              outbound connections and form actions. Browser tests audit the
+              network and persistence surfaces during every tool action.
             </p>
             <p>
               <strong>Wipe keys</strong> clears the inputs, errors, and derived

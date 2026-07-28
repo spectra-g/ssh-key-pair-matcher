@@ -19,6 +19,38 @@ requests.
 Do not use real user keys during development. Tests use only clearly labelled,
 disposable fixtures committed under `tests/fixtures/`.
 
+## How privacy is enforced
+
+- **No server or API:** parsing, fingerprinting, and matching execute in the
+  loaded browser tab.
+- **No runtime third parties:** the page serves its own scripts, styles, fonts,
+  images, and metadata, with no analytics, advertising, or remote runtime
+  assets.
+- **No persistence:** the application does not write keys, results, or theme
+  choices to cookies, browser storage, IndexedDB, Cache Storage, URLs, or
+  history.
+- **Outbound connections are release-blocked:** Step 07 adds the static Pages
+  Content Security Policy with `connect-src 'none'` and `form-action 'none'`.
+  Until that deployment policy lands, the browser audit proves the application
+  itself makes no connection or form-navigation attempt.
+- **The implementation is auditable:** source, disposable fixtures, and privacy
+  tests are available in the
+  [public GitHub repository](https://github.com/spectra-g/ssh-key-pair-matcher).
+
+Production-preview browser tests instrument `fetch`, XHR, beacon, WebSocket,
+EventSource, form navigation, service-worker registration, URL/history
+mutation, storage, console output, and all requests while exercising match,
+mismatch, errors, theme changes, wipe, reload, back/forward restoration, and
+offline-after-load operation. `pagehide` clears key fields before navigation;
+the controller also clears them on persisted `pageshow` restoration. Because
+browser engines do not expose deterministic back-forward-cache control, the
+lifecycle callback has a unit test in addition to the browser back-navigation
+check.
+
+**Wipe keys** clears inputs, errors, and derived results from the current tab.
+It cannot erase copies held by the operating-system clipboard, browser
+extensions, developer tools, screenshots, process memory, or swap.
+
 ## Prerequisites
 
 - Node.js `22.16.0`, exactly

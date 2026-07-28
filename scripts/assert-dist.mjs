@@ -129,6 +129,7 @@ assert(
 const visibleText = indexDocument.body.textContent?.replace(/\s+/gu, " ") ?? "";
 for (const requiredText of [
   "Your keys never leave this browser",
+  "Local-only · No uploads · No storage",
   "How browser-local SSH key matching works",
   "Supported key types and formats",
   "Check a key pair manually with ssh-keygen",
@@ -136,6 +137,7 @@ for (const requiredText of [
   "Why encrypted OpenSSH private keys can be matched",
   "Common parse and mismatch errors",
   "Privacy and open-source design",
+  "How privacy is enforced",
   "SSH key pair matcher FAQs",
 ]) {
   assert(
