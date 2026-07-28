@@ -105,6 +105,7 @@ export function startServer({
   headersPath = resolve(root, "_headers"),
   host = "127.0.0.1",
   port = 4174,
+  noindex = false,
 } = {}) {
   const rules = parseHeadersFile(readFileSync(headersPath, "utf8"));
   const server = createServer((request, response) => {
@@ -119,6 +120,9 @@ export function startServer({
     }
 
     const headers = headersForUrl(rules, requestUrl);
+    if (noindex) {
+      headers["X-Robots-Tag"] = "noindex";
+    }
     headers["Content-Type"] =
       mimeTypes.get(extname(staticPath)) ?? "application/octet-stream";
     if (
@@ -153,7 +157,8 @@ if (
 ) {
   const host = argument("--host", "127.0.0.1");
   const port = Number(argument("--port", "4174"));
-  const server = await startServer({ host, port });
+  const noindex = process.argv.includes("--noindex");
+  const server = await startServer({ host, port, noindex });
   process.stdout.write(`Header preview listening on http://${host}:${port}\n`);
 
   for (const signal of ["SIGINT", "SIGTERM"]) {

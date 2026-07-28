@@ -95,7 +95,9 @@ artifact. It restricts scripts, styles, fonts, images, connections, forms,
 framing, browser capabilities, referrers, and MIME sniffing; it also gives only
 Vite's content-hashed assets immutable caching. The canonical domain remains
 indexable, while the production and branch `pages.dev` aliases receive
-`X-Robots-Tag: noindex`.
+`X-Robots-Tag: noindex`. The local header-preview server supports an explicit
+`--noindex` mode so ephemeral Quick Tunnel previews receive the same directive
+without changing the canonical site's policy.
 
 These rules apply only to static Pages responses. If a Pages Function is ever
 added, it must set equivalent response headers itself; `_headers` does not

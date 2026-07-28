@@ -54,6 +54,7 @@ test("@browser @security @headers serves the complete static response policy", a
     "x-frame-options": "DENY",
     "cross-origin-opener-policy": "same-origin",
     "cache-control": "public, max-age=0, must-revalidate",
+    "x-robots-tag": "noindex",
   });
   expect(headers["permissions-policy"]).toContain("camera=()");
   expect(headers["permissions-policy"]).toContain("microphone=()");
