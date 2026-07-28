@@ -13,7 +13,10 @@ test("@browser serves and operates the semantic production matcher", async ({
   await page.goto("/");
 
   await expect(
-    page.getByRole("heading", { level: 1, name: "SSH Key Pair Matcher" }),
+    page.getByRole("heading", {
+      level: 1,
+      name: "Do these SSH keys match?",
+    }),
   ).toBeVisible();
   await expect(
     page.getByText("Your keys never leave this browser"),
@@ -90,16 +93,21 @@ test("@browser reports field errors and encrypted mismatches", async ({
   );
 });
 
-test("@a11y has no serious or critical axe violations", async ({ page }) => {
-  await page.goto("/");
+for (const colorScheme of ["light", "dark"] as const) {
+  test(`@a11y ${colorScheme} theme has no serious or critical axe violations`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme });
+    await page.goto("/");
 
-  const results = await new AxeBuilder({ page }).analyze();
-  const blockers = results.violations.filter(
-    ({ impact }) => impact === "serious" || impact === "critical",
-  );
+    const results = await new AxeBuilder({ page }).analyze();
+    const blockers = results.violations.filter(
+      ({ impact }) => impact === "serious" || impact === "critical",
+    );
 
-  expect(blockers).toEqual([]);
-});
+    expect(blockers).toEqual([]);
+  });
+}
 
 test("@privacy checks and wipes without third parties or persistence", async ({
   page,

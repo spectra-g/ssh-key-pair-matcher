@@ -9,5 +9,12 @@ distributed under the MIT License:
 
 > Copyright (c) 2026 Scratch Tabs contributors
 
-No key-parsing code is part of the Step 01 repository baseline. Later
-adaptations will retain this notice and the applicable MIT license terms.
+The browser-local matching implementation retains this notice and the
+applicable MIT license terms.
+
+The visual system self-hosts the Latin variable subsets of Manrope and
+JetBrains Mono. Both are distributed under the SIL Open Font License 1.1; the
+copyright notices and full license texts are committed in:
+
+- `public/fonts/LICENSE-Manrope.txt`
+- `public/fonts/LICENSE-JetBrains-Mono.txt`

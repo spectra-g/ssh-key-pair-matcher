@@ -18,6 +18,12 @@ import { fixture } from "./core-test-helpers";
 const indexHtml = readFileSync(resolve("index.html"), "utf8");
 const controllers: MatcherController[] = [];
 
+class StubMediaQueryList extends EventTarget {
+  matches = false;
+  readonly media = "(prefers-color-scheme: dark)";
+  onchange: ((event: MediaQueryListEvent) => void) | null = null;
+}
+
 function loadPageMarkup(): void {
   const parsed = new DOMParser().parseFromString(indexHtml, "text/html");
   document.body.innerHTML = parsed.body.innerHTML;
@@ -41,6 +47,11 @@ async function pasteKeys(
 }
 
 beforeEach(() => {
+  const mediaQuery = new StubMediaQueryList();
+  vi.stubGlobal(
+    "matchMedia",
+    vi.fn(() => mediaQuery),
+  );
   loadPageMarkup();
 });
 
@@ -60,7 +71,8 @@ describe("matcher bootstrap and static form contract", () => {
     (publicKey as HTMLTextAreaElement).value = "browser-restored public key";
     (privateKey as HTMLTextAreaElement).value = "browser-restored private key";
 
-    controllers.push(initializePage(document));
+    const controller = initializePage(document);
+    controllers.push(controller);
 
     expect(
       screen.getByRole("heading", {
@@ -84,6 +96,9 @@ describe("matcher bootstrap and static form contract", () => {
     expect(
       screen.getByText("Paste both keys to enable checking."),
     ).toHaveAttribute("id", "submit-help");
+
+    controller.wipe();
+    expect(publicKey).toHaveFocus();
   });
 
   it("fails clearly when the static document contract is broken", () => {

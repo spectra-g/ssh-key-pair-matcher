@@ -5,8 +5,9 @@ OpenSSH private key belong to the same pair.
 
 The repository contains the reproducible Vite/TypeScript baseline, the
 browser-local matching engine, and the complete semantic matcher interaction
-from Steps 01–03. The visual system and supporting launch content are delivered
-in later planned steps, so the current styling is intentionally functional.
+from Steps 01–04. It includes the finished responsive light/dark visual system,
+self-hosted fonts, non-persistent theme control, and deterministic visual
+baselines. Supporting launch content is delivered in later planned steps.
 
 ## Privacy contract
 
@@ -121,6 +122,12 @@ The semantic form in `index.html` is progressively enhanced by
 Changing either input invalidates old results, while **Wipe keys**, `pagehide`,
 and back-forward-cache restoration clear the key fields and derived output.
 
+The initial theme follows `prefers-color-scheme`. The accessible theme control
+overrides only the current document, continues to follow live system changes
+until that override, and never reads or writes browser storage. Manrope and
+JetBrains Mono are served locally as variable Latin WOFF2 fonts under the SIL
+Open Font License; their license texts are committed under `public/fonts/`.
+
 All committed keys under `tests/fixtures/` are disposable public test material
 generated independently with `ssh-keygen`. Never authorize or reuse them.
 
@@ -129,7 +136,8 @@ generated independently with `ssh-keygen`. Never authorize or reuse them.
 - `index.html` contains the semantic static page.
 - `src/` contains first-party browser TypeScript and CSS.
 - `tests/unit/` contains Vitest tests.
-- `tests/e2e/` contains Playwright production-build tests.
+- `tests/e2e/` contains Playwright production-build tests and six release
+  viewport/theme visual baselines.
 - `site.config.ts` is the single source for canonical and repository URLs.
 
 ## Repository status
