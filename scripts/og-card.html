@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SSH Key Pair Matcher social card source</title>
+    <style>
+      @font-face {
+        font-family: "Manrope";
+        font-weight: 200 800;
+        src: url("../public/fonts/manrope-latin-variable.woff2")
+          format("woff2-variations");
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 1200px;
+        height: 630px;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+        background: #07110e;
+        color: #edf7f3;
+        font-family: "Manrope", system-ui, sans-serif;
+      }
+
+      .card {
+        position: relative;
+        display: grid;
+        width: 1080px;
+        height: 510px;
+        grid-template-columns: 1fr 360px;
+        align-items: center;
+        gap: 64px;
+        overflow: hidden;
+        border: 2px solid #29463c;
+        border-radius: 36px;
+        padding: 64px 70px;
+        background: #0d1a16;
+      }
+
+      .card::after {
+        position: absolute;
+        right: -130px;
+        bottom: -180px;
+        width: 430px;
+        height: 430px;
+        border: 70px solid #153e30;
+        border-radius: 50%;
+        content: "";
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        color: #7ae7bd;
+        font-size: 25px;
+        font-weight: 750;
+        letter-spacing: -0.02em;
+      }
+
+      .brand svg {
+        width: 46px;
+        height: 46px;
+      }
+
+      h1 {
+        max-width: 650px;
+        margin: 34px 0 22px;
+        font-size: 66px;
+        font-weight: 760;
+        letter-spacing: -0.055em;
+        line-height: 1.04;
+      }
+
+      h1 span {
+        color: #54dfa9;
+      }
+
+      p {
+        max-width: 650px;
+        margin: 0;
+        color: #a9bdb5;
+        font-size: 25px;
+        font-weight: 500;
+        line-height: 1.45;
+      }
+
+      .visual {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        place-items: center;
+      }
+
+      .shield {
+        display: grid;
+        width: 260px;
+        height: 300px;
+        place-items: center;
+        color: #54dfa9;
+      }
+
+      .shield svg {
+        width: 250px;
+        height: 280px;
+      }
+
+      .status {
+        position: absolute;
+        bottom: 28px;
+        display: flex;
+        width: max-content;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid #527467;
+        border-radius: 999px;
+        padding: 12px 20px;
+        background: #11221c;
+        color: #edf7f3;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .status::before {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #54dfa9;
+        content: "";
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <div>
+        <div class="brand">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <path
+              d="M16 2.75 27 7v7.93c0 6.63-4.65 11.88-11 14.32C9.65 26.81 5 21.56 5 14.93V7l11-4.25Z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.25"
+              stroke-linejoin="round"
+            />
+            <path
+              d="m11.25 13.25 3 2.75-3 2.75M17 19h4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.25"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          SSH Key Pair Matcher
+        </div>
+        <h1>Do your <span>SSH keys</span> match?</h1>
+        <p>
+          Compare public and private keys locally in your browser. No uploads.
+          No storage.
+        </p>
+      </div>
+      <div class="visual">
+        <div class="shield">
+          <svg viewBox="0 0 260 290" aria-hidden="true">
+            <path
+              d="M130 16 231 55v73c0 61-43 109-101 132C72 237 29 189 29 128V55l101-39Z"
+              fill="#153e30"
+              stroke="currentColor"
+              stroke-width="8"
+              stroke-linejoin="round"
+            />
+            <path
+              d="m82 136 31 29 66-70"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="12"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+        <div class="status">Browser-local</div>
+      </div>
+    </main>
+  </body>
+</html>

@@ -5,9 +5,9 @@ OpenSSH private key belong to the same pair.
 
 The repository contains the reproducible Vite/TypeScript baseline, the
 browser-local matching engine, and the complete semantic matcher interaction
-from Steps 01–04. It includes the finished responsive light/dark visual system,
-self-hosted fonts, non-persistent theme control, and deterministic visual
-baselines. Supporting launch content is delivered in later planned steps.
+from Steps 01–05. It includes the finished responsive light/dark visual system,
+self-hosted fonts, non-persistent theme control, deterministic visual baselines,
+and the crawlable technical guidance and metadata for launch.
 
 ## Privacy contract
 
@@ -91,6 +91,8 @@ Individual scripts are available for focused work:
 - `npm run test:privacy` — check the baseline for third-party requests and
   persistence
 - `npm run test:lighthouse` — run local Lighthouse CI assertions
+- `npm run assert:dist` — validate production metadata, JSON-LD, crawl files,
+  source links, privacy copy, 404 page, and social-card dimensions
 
 Re-check the committed disposable SSH fixtures against the operating system's
 independent OpenSSH implementation:
@@ -139,13 +141,13 @@ generated independently with `ssh-keygen`. Never authorize or reuse them.
 - `tests/e2e/` contains Playwright production-build tests and six release
   viewport/theme visual baselines.
 - `site.config.ts` is the single source for canonical and repository URLs.
+- `scripts/assert-dist.mjs` validates the static launch artifact.
 
 ## Repository status
 
-No Git remote is configured yet. The final public repository URL is therefore
-intentionally unset in `site.config.ts` and is not displayed by the site.
-Configure and verify the public `origin` before adding that URL.
-
+The public source repository is
+[spectra-g/ssh-key-pair-matcher](https://github.com/spectra-g/ssh-key-pair-matcher),
+and this clone uses it as `origin`.
 The canonical site URL is `https://sshkeypairmatcher.com/`.
 
 ## License and security

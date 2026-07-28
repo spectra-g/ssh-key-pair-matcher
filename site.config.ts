@@ -1,4 +1,4 @@
 export const siteConfig = {
   canonicalUrl: "https://sshkeypairmatcher.com/",
-  repositoryUrl: null,
+  repositoryUrl: "https://github.com/spectra-g/ssh-key-pair-matcher",
 } as const;

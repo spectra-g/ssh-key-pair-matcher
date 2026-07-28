@@ -30,11 +30,11 @@ async function expectInsideViewport(
 async function requiredAboveFoldElements(page: Page): Promise<Locator[]> {
   return [
     page.locator(".brand"),
-    page.locator(".source-pending"),
+    page.getByRole("link", { name: "Inspect the source code on GitHub" }),
     page.getByRole("button", { name: /Switch to (?:light|dark) theme/ }),
     page.getByRole("heading", {
       level: 1,
-      name: "Do these SSH keys match?",
+      name: "Check whether an SSH public key matches a private key",
     }),
     page.locator(".hero__summary"),
     page.getByRole("heading", {

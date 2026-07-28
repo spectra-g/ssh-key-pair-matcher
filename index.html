@@ -5,16 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Check whether an SSH public key and private key belong to the same pair, locally in your browser."
+      content="Check whether an SSH public key matches an OpenSSH private key. The comparison runs locally in your browser, with no uploads or storage."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="theme-color"
+      content="#f4f7f6"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#07110e"
+      media="(prefers-color-scheme: dark)"
     />
     <link rel="canonical" href="__CANONICAL_SITE_URL__" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <title>SSH Key Pair Matcher</title>
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="SSH Key Pair Matcher" />
+    <meta
+      property="og:title"
+      content="SSH Key Pair Matcher — Check Public &amp; Private Keys Locally"
+    />
+    <meta
+      property="og:description"
+      content="Check whether an SSH public key matches an OpenSSH private key. Nothing is uploaded or stored."
+    />
+    <meta property="og:url" content="__CANONICAL_SITE_URL__" />
+    <meta
+      property="og:image"
+      content="__CANONICAL_SITE_URL__og/ssh-key-pair-matcher.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="SSH Key Pair Matcher browser-local utility"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="SSH Key Pair Matcher — Check Public &amp; Private Keys Locally"
+    />
+    <meta
+      name="twitter:description"
+      content="Check whether an SSH public key matches an OpenSSH private key. Nothing is uploaded or stored."
+    />
+    <meta
+      name="twitter:image"
+      content="__CANONICAL_SITE_URL__og/ssh-key-pair-matcher.png"
+    />
+    <meta
+      name="twitter:image:alt"
+      content="SSH Key Pair Matcher browser-local utility"
+    />
+    <title>
+      SSH Key Pair Matcher — Check Public &amp; Private Keys Locally
+    </title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "SSH Key Pair Matcher",
+        "description": "Check whether an SSH public key matches an OpenSSH private key locally in the browser.",
+        "url": "__CANONICAL_SITE_URL__",
+        "codeRepository": "__REPOSITORY_URL__",
+        "applicationCategory": "UtilitiesApplication",
+        "applicationSubCategory": "Developer security utility",
+        "operatingSystem": "Any operating system with a modern web browser",
+        "browserRequirements": "Requires a modern browser with JavaScript enabled for matching",
+        "isAccessibleForFree": true,
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      }
+    </script>
   </head>
   <body>
     <header class="site-header">
       <div class="site-header__inner">
-        <span class="brand" aria-label="SSH Key Pair Matcher home">
+        <a class="brand" href="/" aria-label="SSH Key Pair Matcher home">
           <svg
             class="brand__mark"
             width="32"
@@ -39,14 +111,21 @@
             />
           </svg>
           <span>SSH Key Pair <strong>Matcher</strong></span>
-        </span>
+        </a>
         <div class="site-header__actions">
-          <span
-            class="source-pending"
-            title="The public repository link will appear after publication."
+          <a
+            class="source-link"
+            href="__REPOSITORY_URL__"
+            aria-label="Inspect the source code on GitHub"
           >
-            Source pending
-          </span>
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 2.5a9.5 9.5 0 0 0-3 18.51c.48.09.65-.21.65-.46v-1.84c-2.67.58-3.23-1.13-3.23-1.13-.44-1.11-1.07-1.41-1.07-1.41-.87-.6.07-.59.07-.59.96.07 1.47.99 1.47.99.86 1.47 2.25 1.05 2.8.8.09-.62.34-1.05.61-1.29-2.13-.24-4.37-1.06-4.37-4.7 0-1.04.37-1.89.99-2.56-.1-.24-.43-1.21.09-2.52 0 0 .81-.26 2.61.98A9.1 9.1 0 0 1 12 6.95a9 9 0 0 1 2.38.32c1.81-1.24 2.61-.98 2.61-.98.52 1.31.19 2.28.09 2.52.62.67.99 1.52.99 2.56 0 3.65-2.25 4.46-4.39 4.7.35.3.65.88.65 1.78v2.7c0 .25.18.55.66.46A9.5 9.5 0 0 0 12 2.5Z"
+                fill="currentColor"
+              />
+            </svg>
+            <span>GitHub</span>
+          </a>
           <button
             id="theme-toggle"
             class="theme-toggle"
@@ -100,10 +179,12 @@
     <main>
       <section class="hero" aria-labelledby="page-heading">
         <p class="eyebrow">Browser-local SSH utility</p>
-        <h1 id="page-heading">Do these <span>SSH keys</span> match?</h1>
+        <h1 id="page-heading">
+          Check whether an <span>SSH public key</span> matches a private key
+        </h1>
         <p class="hero__summary">
-          Check whether an SSH public key and OpenSSH private key belong to the
-          same pair.
+          Paste an SSH public key and an OpenSSH private key to compare their
+          public components locally in your browser.
         </p>
       </section>
 
@@ -128,6 +209,7 @@
           <h2 id="privacy-heading">Your keys never leave this browser</h2>
           <p>
             Matching happens locally in this tab. Nothing is uploaded or stored.
+            <a href="__REPOSITORY_URL__">Open source — inspect the code.</a>
           </p>
         </div>
       </section>
@@ -281,7 +363,7 @@
         tabindex="-1"
         hidden
       >
-        <h2 id="result-summary"></h2>
+        <h2 id="result-summary">Key pair result</h2>
         <p id="result-description"></p>
         <div class="result-details">
           <section aria-labelledby="public-result-heading">
@@ -336,7 +418,233 @@
           recommendation.
         </p>
       </section>
+
+      <div class="guide">
+        <section class="guide__intro" aria-labelledby="how-it-works">
+          <p class="eyebrow">Understand the comparison</p>
+          <h2 id="how-it-works">How browser-local SSH key matching works</h2>
+          <p>
+            An SSH private key contains enough public information to identify
+            its pair. This tool parses the public key blob from each pasted
+            value, validates its structure, and compares the two blobs in this
+            tab. It does not generate a signature, contact a server, or need
+            access to the private key’s secret values.
+          </p>
+        </section>
+
+        <div class="guide__grid">
+          <section class="guide-card" aria-labelledby="supported-formats">
+            <h2 id="supported-formats">Supported key types and formats</h2>
+            <p>
+              The matcher accepts one OpenSSH public key line and one private
+              key in the <strong>OpenSSH v1</strong> container format. Supported
+              algorithms are:
+            </p>
+            <ul>
+              <li>Ed25519 (<code>ssh-ed25519</code>)</li>
+              <li>RSA (<code>ssh-rsa</code>)</li>
+              <li>
+                ECDSA P-256, P-384, and P-521
+                (<code>ecdsa-sha2-nistp256/384/521</code>)
+              </li>
+            </ul>
+            <p>
+              PKCS#1, PKCS#8, PEM EC, PuTTY PPK, OpenSSH certificates, FIDO
+              security-key formats, and multi-key private containers are not
+              accepted in version 1.
+            </p>
+          </section>
+
+          <section class="guide-card" aria-labelledby="encrypted-keys">
+            <h2 id="encrypted-keys">
+              Why encrypted OpenSSH private keys can be matched
+            </h2>
+            <p>
+              An encrypted OpenSSH private-key file still stores its public key
+              blob in the unencrypted outer container. The secret private
+              payload remains encrypted. The matcher reads only that public
+              component, so it can identify the corresponding public key without
+              asking for or testing a passphrase.
+            </p>
+            <p>
+              This does not decrypt the private key, validate its passphrase, or
+              prove that the file can be used to authenticate.
+            </p>
+          </section>
+        </div>
+
+        <section
+          class="guide-card guide-card--wide"
+          aria-labelledby="manual-check"
+        >
+          <div>
+            <h2 id="manual-check">Check a key pair manually with ssh-keygen</h2>
+            <p>
+              OpenSSH can derive a public key from a private-key file locally.
+              Use file paths so key material does not enter your shell history:
+            </p>
+            <pre><code>ssh-keygen -y -f ~/.ssh/id_ed25519 &gt; /tmp/id_ed25519.derived.pub
+ssh-keygen -lf /tmp/id_ed25519.derived.pub -E sha256
+ssh-keygen -lf ~/.ssh/id_ed25519.pub -E sha256</code></pre>
+            <p>
+              If the two SHA-256 fingerprints are identical, the keys match. An
+              encrypted private key will prompt for its passphrase in your
+              terminal. Delete the temporary derived public-key file when you
+              are finished.
+            </p>
+          </div>
+          <aside class="callout" aria-label="Private key safety note">
+            <strong>Keep the private key local.</strong>
+            <p>
+              Do not pass key text as a command-line argument or paste it into
+              an online shell. Work with a file you control and check its
+              permissions first.
+            </p>
+          </aside>
+        </section>
+
+        <div class="guide__grid">
+          <section class="guide-card" aria-labelledby="fingerprints">
+            <h2 id="fingerprints">What SSH fingerprints mean</h2>
+            <p>
+              A fingerprint is a short digest of the complete binary public-key
+              blob, including its algorithm fields. It is easier to compare than
+              a long base64 key. Matching SHA-256 fingerprints identify the same
+              public component; they do not reveal the private key.
+            </p>
+            <p>
+              SHA-256 is the primary modern fingerprint. MD5 is displayed only
+              to compare with older OpenSSH output and inventories. It is not a
+              security recommendation.
+            </p>
+          </section>
+
+          <section class="guide-card" aria-labelledby="common-errors">
+            <h2 id="common-errors">Common parse and mismatch errors</h2>
+            <dl class="explanations">
+              <div>
+                <dt>Wrong field or format</dt>
+                <dd>
+                  Check that the public field begins with a supported SSH
+                  algorithm and the private field contains an OpenSSH private
+                  key, not a PEM or PPK file.
+                </dd>
+              </div>
+              <div>
+                <dt>Malformed key data</dt>
+                <dd>
+                  Re-copy the complete key from its file. Damaged base64,
+                  missing armor lines, unexpected whitespace, and trailing
+                  binary fields are rejected.
+                </dd>
+              </div>
+              <div>
+                <dt>Valid keys, different pair</dt>
+                <dd>
+                  Two keys may use the same algorithm and size but still have
+                  different fingerprints. Select the matching
+                  <code>.pub</code> file or derive it again with
+                  <code>ssh-keygen -y</code>.
+                </dd>
+              </div>
+            </dl>
+          </section>
+        </div>
+
+        <section
+          class="guide-card guide-card--wide"
+          aria-labelledby="privacy-design"
+        >
+          <div>
+            <h2 id="privacy-design">Privacy and open-source design</h2>
+            <p>
+              The matcher runs entirely in the loaded browser tab. It has no
+              account, API, analytics, advertising, runtime third-party assets,
+              key history, or browser-storage feature. Checking and wiping do
+              not submit a form or add key material to the page URL.
+            </p>
+            <p>
+              <strong>Wipe keys</strong> clears the inputs, errors, and derived
+              results from this tab. It cannot erase copies held by your
+              clipboard, browser extensions, developer tools, screenshots,
+              operating-system memory, or swap.
+            </p>
+          </div>
+          <p class="source-callout">
+            Audit the implementation, tests, privacy constraints, and MIT
+            license in the
+            <a href="__REPOSITORY_URL__">public GitHub repository</a>.
+          </p>
+        </section>
+
+        <section class="faq" aria-labelledby="faq-heading">
+          <p class="eyebrow">Focused answers</p>
+          <h2 id="faq-heading">SSH key pair matcher FAQs</h2>
+          <div class="faq__items">
+            <details>
+              <summary>
+                Can I check an encrypted private key without its passphrase?
+              </summary>
+              <p>
+                Yes, when it uses the OpenSSH v1 private-key format. Its outer
+                container exposes the public component needed for comparison;
+                the encrypted private payload is not opened.
+              </p>
+            </details>
+            <details>
+              <summary>Does a matching pair prove the key is safe?</summary>
+              <p>
+                No. A match proves only that both files contain the same public
+                component. It does not assess passphrase strength, file
+                permissions, compromise, revocation, or whether a server
+                authorizes that public key.
+              </p>
+            </details>
+            <details>
+              <summary>Why is my PEM or PuTTY key rejected?</summary>
+              <p>
+                Version 1 deliberately accepts only OpenSSH v1 private-key
+                containers. If OpenSSH can read your local key, use
+                <code>ssh-keygen -y -f /path/to/private-key</code> to derive its
+                public key, or convert a backup locally before using this tool.
+              </p>
+            </details>
+            <details>
+              <summary>
+                Is comparing only the algorithm and key size enough?
+              </summary>
+              <p>
+                No. Many unrelated keys share an algorithm and size. The
+                complete public-key blobs—or their complete fingerprints—must
+                match.
+              </p>
+            </details>
+            <details>
+              <summary>Are pasted keys uploaded or saved?</summary>
+              <p>
+                No. Matching runs in this tab, and the application does not
+                upload or store the pasted values. Use Wipe keys when you are
+                finished to clear the form and results from the tab.
+              </p>
+            </details>
+          </div>
+        </section>
+      </div>
     </main>
+    <footer class="site-footer">
+      <div>
+        <p>
+          SSH Key Pair Matcher is an open-source browser utility released under
+          the MIT License.
+        </p>
+        <nav aria-label="Project links">
+          <a href="__REPOSITORY_URL__">Source code</a>
+          <a href="__REPOSITORY_URL__/blob/main/SECURITY.md"
+            >Report a security issue</a
+          >
+        </nav>
+      </div>
+    </footer>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

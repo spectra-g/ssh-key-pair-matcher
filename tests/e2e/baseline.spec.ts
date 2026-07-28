@@ -15,7 +15,7 @@ test("@browser serves and operates the semantic production matcher", async ({
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "Do these SSH keys match?",
+      name: "Check whether an SSH public key matches a private key",
     }),
   ).toBeVisible();
   await expect(

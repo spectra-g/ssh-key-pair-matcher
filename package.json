@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/assert-dist.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
@@ -21,6 +21,7 @@
     "test:a11y": "npm run build && playwright test --grep @a11y",
     "test:privacy": "npm run build && playwright test --grep @privacy",
     "test:lighthouse": "npm run build && lhci autorun",
+    "assert:dist": "node scripts/assert-dist.mjs",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run build",
     "verify": "npm run check && npm run test:e2e && npm run test:a11y && npm run test:privacy && npm run test:lighthouse"
   },
@@ -35,6 +36,7 @@
     "@types/node": "22.20.0",
     "@vitest/coverage-v8": "4.1.10",
     "eslint": "10.8.0",
+    "html-validate": "10.4.0",
     "jsdom": "27.4.0",
     "prettier": "3.9.6",
     "typescript": "5.9.3",
