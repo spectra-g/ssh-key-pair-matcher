@@ -111,6 +111,24 @@ describe("independent OpenSSH fixtures", () => {
     expect(
       bytesEqualConstantTimeStyle(new Uint8Array([1, 0]), new Uint8Array([1])),
     ).toBe(false);
+
+    const reads = { left: 0, right: 0 };
+    const tracked = (value: number[], side: keyof typeof reads): Uint8Array =>
+      new Proxy(new Uint8Array(value), {
+        get(target, property) {
+          if (typeof property === "string" && /^\d+$/u.test(property)) {
+            reads[side] += 1;
+          }
+          return Reflect.get(target, property, target) as unknown;
+        },
+      });
+    expect(
+      bytesEqualConstantTimeStyle(
+        tracked([1], "left"),
+        tracked([1, 0], "right"),
+      ),
+    ).toBe(false);
+    expect(reads).toEqual({ left: 2, right: 2 });
   });
 
   it("uses typed, field-specific, safe errors", () => {

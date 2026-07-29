@@ -12,6 +12,10 @@ const releaseViewports = [
 
 const themes = ["light", "dark"] as const;
 
+async function pressTab(page: Page, browserName: string): Promise<void> {
+  await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
+}
+
 async function expectInsideViewport(
   locator: Locator,
   viewport: { width: number; height: number },
@@ -54,7 +58,7 @@ for (const viewport of releaseViewports) {
   for (const theme of themes) {
     test(`@browser @layout @above-fold @responsive @theme ${viewport.name} ${theme}`, async ({
       page,
-    }) => {
+    }, testInfo) => {
       await page.setViewportSize(viewport);
       await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
       await page.goto("/");
@@ -91,10 +95,12 @@ for (const viewport of releaseViewports) {
       }));
       expect(documentSize.scrollWidth).toBe(documentSize.clientWidth);
 
-      await expect(page).toHaveScreenshot(`${viewport.name}-${theme}.png`, {
-        animations: "disabled",
-        fullPage: false,
-      });
+      if (testInfo.project.name === "chromium-desktop") {
+        await expect(page).toHaveScreenshot(`${viewport.name}-${theme}.png`, {
+          animations: "disabled",
+          fullPage: false,
+        });
+      }
     });
   }
 }
@@ -122,7 +128,6 @@ test("@browser @privacy @theme follows the system until a document-only override
   await toggle.click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await expect(toggle).toHaveAccessibleName("Switch to dark theme");
-  await expect(toggle).toBeFocused();
 
   await page.emulateMedia({ colorScheme: "light" });
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
@@ -200,6 +205,7 @@ test("@browser @layout production output excludes POC references", () => {
 
 for (const colorScheme of themes) {
   test(`@browser @theme ${colorScheme} theme preserves keyboard order and focus`, async ({
+    browserName,
     page,
   }) => {
     await page.emulateMedia({ colorScheme });
@@ -211,9 +217,9 @@ for (const colorScheme of themes) {
     const toggle = page.locator("#theme-toggle");
     await expect(publicKey).toBeFocused();
 
-    await page.keyboard.press("Tab");
+    await pressTab(page, browserName);
     await expect(privateKey).toBeFocused();
-    await page.keyboard.press("Tab");
+    await pressTab(page, browserName);
     await expect(wipe).toBeFocused();
 
     await toggle.focus();

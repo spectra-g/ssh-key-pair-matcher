@@ -152,7 +152,6 @@ function recordRequests(page: Page): {
 }
 
 async function waitForInitialAssets(page: Page): Promise<void> {
-  await page.waitForLoadState("networkidle");
   await page.evaluate(() => document.fonts.ready);
 }
 

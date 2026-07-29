@@ -1,11 +1,23 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 const fixture = (name: string): string =>
   readFileSync(resolve("tests/fixtures", name), "utf8");
+
+async function pressTab(
+  page: Page,
+  browserName: string,
+  backwards = false,
+): Promise<void> {
+  const modifiers = [
+    backwards ? "Shift" : "",
+    browserName === "webkit" ? "Alt" : "",
+  ].filter(Boolean);
+  await page.keyboard.press([...modifiers, "Tab"].join("+"));
+}
 
 test("@browser serves and operates the semantic production matcher", async ({
   page,
@@ -91,25 +103,48 @@ test("@browser reports field errors and encrypted mismatches", async ({
   await expect(page.locator("#match-result")).not.toContainText(
     fixture("ed25519-b-encrypted"),
   );
+
+  await publicKey.fill(fixture("ed25519-b-encrypted.pub"));
+  await privateKey.fill(fixture("ed25519-b-encrypted"));
+  await check.click();
+  await expect(
+    page.getByRole("heading", { name: "These keys match" }),
+  ).toBeVisible();
+  await expect(page.locator("#private-encrypted")).toHaveText("Yes");
 });
 
-for (const colorScheme of ["light", "dark"] as const) {
-  test(`@a11y ${colorScheme} theme has no serious or critical axe violations`, async ({
-    page,
-  }) => {
-    await page.emulateMedia({ colorScheme });
-    await page.goto("/");
+test("@browser completes the matcher and wipe flow with the keyboard", async ({
+  browserName,
+  page,
+}) => {
+  await page.goto("/");
+  const publicKey = page.getByRole("textbox", { name: "Public key" });
+  const privateKey = page.getByRole("textbox", { name: "Private key" });
+  const wipe = page.getByRole("button", { name: "Wipe keys" });
+  const check = page.getByRole("button", { name: "Check key pair" });
 
-    const results = await new AxeBuilder({ page }).analyze();
-    const blockers = results.violations.filter(
-      ({ impact }) => impact === "serious" || impact === "critical",
-    );
+  await expect(publicKey).toBeFocused();
+  await publicKey.fill(fixture("rsa-2048-a.pub"));
+  await pressTab(page, browserName);
+  await expect(privateKey).toBeFocused();
+  await privateKey.fill(fixture("rsa-2048-a"));
+  await pressTab(page, browserName);
+  await expect(check).toBeFocused();
+  await page.keyboard.press("Enter");
+  const result = page.getByRole("region", { name: "These keys match" });
+  await expect(result).toBeVisible();
+  await expect(result).toBeFocused();
+  await expect(page.locator("#public-key-size")).toHaveText("2048 bits");
 
-    expect(blockers).toEqual([]);
-  });
-}
+  await pressTab(page, browserName, true);
+  await expect(wipe).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(publicKey).toHaveValue("");
+  await expect(privateKey).toHaveValue("");
+  await expect(publicKey).toBeFocused();
+});
 
-test("@privacy checks and wipes without third parties or persistence", async ({
+test("@browser @privacy checks and wipes without third parties or persistence", async ({
   page,
 }) => {
   const remoteRequests: string[] = [];

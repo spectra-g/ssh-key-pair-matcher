@@ -260,6 +260,7 @@ export function initializeMatcher(
       isChecking = false;
       renderResult(result);
       updateSubmitState();
+      elements.result.focus();
     } catch {
       if (revision !== checkRevision) {
         return;

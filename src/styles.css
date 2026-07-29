@@ -545,6 +545,7 @@ textarea:-webkit-autofill {
 button:focus-visible,
 textarea:focus-visible,
 .result:focus-visible,
+pre:focus-visible,
 a:focus-visible,
 summary:focus-visible {
   outline: 3px solid var(--focus);

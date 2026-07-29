@@ -6,7 +6,7 @@ export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
   forbidOnly: Boolean(process.env["CI"]),
-  retries: process.env["CI"] ? 1 : 0,
+  retries: 0,
   reporter: [["line"], ["html", { open: "never" }]],
   snapshotPathTemplate: "{testDir}/{testFilePath}-snapshots/{arg}{ext}",
   use: {
@@ -15,8 +15,32 @@ export default defineConfig({
   },
   projects: [
     {
-      name: "chromium",
+      name: "chromium-desktop",
       use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "firefox-desktop",
+      use: { ...devices["Desktop Firefox"] },
+    },
+    {
+      name: "webkit-desktop",
+      use: { ...devices["Desktop Safari"] },
+    },
+    {
+      name: "chromium-mobile",
+      use: { ...devices["Pixel 5"] },
+    },
+    {
+      name: "firefox-mobile",
+      use: {
+        ...devices["Desktop Firefox"],
+        viewport: { width: 390, height: 844 },
+        hasTouch: true,
+      },
+    },
+    {
+      name: "webkit-mobile",
+      use: { ...devices["iPhone 12"] },
     },
   ],
   webServer: [

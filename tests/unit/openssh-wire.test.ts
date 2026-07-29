@@ -26,6 +26,10 @@ function expectWireError(
 
 describe("bounded SSH wire reads", () => {
   it("reads uint32 values and tracks remaining bytes", () => {
+    expect(new WireFormatError("truncated")).toMatchObject({
+      name: "WireFormatError",
+      code: "truncated",
+    });
     const reader = new WireReader(
       concat(uint32(0x01020304), new Uint8Array([9])),
     );
@@ -64,6 +68,15 @@ describe("bounded SSH wire reads", () => {
       () => new WireReader(sshBytes(new Uint8Array([0x0a]))).readName(),
       "invalid-text",
     );
+    for (const invalid of [
+      new Uint8Array([0x0a, 0x61]),
+      new Uint8Array([0x61, 0x0a]),
+    ]) {
+      expectWireError(
+        () => new WireReader(sshBytes(invalid)).readName(),
+        "invalid-text",
+      );
+    }
   });
 
   it("requires canonical positive mpints", () => {
@@ -106,6 +119,9 @@ describe("public-key wire validation", () => {
     expect(parsePublicWire(rsaWire())).toMatchObject({
       keyType: "ssh-rsa",
       algorithm: "RSA",
+      bits: 1024,
+    });
+    expect(parsePublicWire(rsaWire(new Uint8Array([3])))).toMatchObject({
       bits: 1024,
     });
     const maximumRsaModulus = new Uint8Array(2048);
@@ -157,6 +173,16 @@ describe("public-key wire validation", () => {
         return value;
       })(),
       "modulus below 1024 bits",
+    ],
+    [
+      undefined,
+      (() => {
+        const value = new Uint8Array(128);
+        value[0] = 0x40;
+        value[value.length - 1] = 1;
+        return value;
+      })(),
+      "partial-byte modulus below 1024 bits",
     ],
     [
       undefined,

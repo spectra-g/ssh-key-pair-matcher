@@ -144,6 +144,7 @@ describe("checking key pairs", () => {
     const result = await screen.findByRole("region", {
       name: "These keys match",
     });
+    expect(result).toHaveFocus();
     expect(result).toHaveClass("result--match");
     expect(result).toHaveTextContent("Ed25519");
     expect(result).toHaveTextContent("256 bits");

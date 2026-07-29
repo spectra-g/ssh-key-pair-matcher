@@ -142,7 +142,7 @@ describe("public-line parsing errors", () => {
 
   it("accepts ASCII separators but does not retain arbitrary comments", () => {
     const parsed = parsePublicKey(
-      `\t${publicLine("ssh-ed25519", ed25519Wire(), "comment 😀")}\t`,
+      `\t  ${publicLine("ssh-ed25519", ed25519Wire(), "comment 😀")}  \t`,
     );
 
     expect(parsed).not.toHaveProperty("comment");

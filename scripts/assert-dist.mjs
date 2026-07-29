@@ -1,5 +1,6 @@
-import { readFileSync, statSync } from "node:fs";
-import { resolve } from "node:path";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { dirname, posix, relative, resolve } from "node:path";
+import { gzipSync } from "node:zlib";
 
 import { HtmlValidate } from "html-validate";
 import { JSDOM } from "jsdom";
@@ -10,11 +11,22 @@ const expectedTitle =
   "SSH Key Pair Matcher — Check Public & Private Keys Locally";
 const expectedDescription =
   "Check whether an SSH public key matches an OpenSSH private key. The comparison runs locally in your browser, with no uploads or storage.";
+const maximumCompressedJavaScriptBytes = 35 * 1024;
+const maximumInitialTransferBytes = 180 * 1024;
+const maximumAssetBytes = 100 * 1024;
 
 const distPath = resolve("dist");
+const canonicalOrigin = new URL(canonicalUrl).origin;
 
 function readDist(relativePath) {
   return readFileSync(resolve(distPath, relativePath), "utf8");
+}
+
+function filesUnder(directory) {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = resolve(directory, entry.name);
+    return entry.isDirectory() ? filesUnder(path) : [path];
+  });
 }
 
 function assert(condition, message) {
@@ -97,6 +109,147 @@ const applicationJavaScript = readDist(applicationScriptPath);
 assert(
   !/\beval\s*\(|\bFunction\s*\(/u.test(applicationJavaScript),
   "application JavaScript contains dynamic code generation",
+);
+
+const distFiles = filesUnder(distPath);
+const distRelativePaths = distFiles.map((path) =>
+  relative(distPath, path).replaceAll("\\", "/"),
+);
+const executablePaths = distRelativePaths.filter((path) =>
+  /\.(?:[cm]?js|wasm)$/u.test(path),
+);
+assert(
+  executablePaths.length === 1 && executablePaths[0] === applicationScriptPath,
+  `unexpected executable files: ${executablePaths.join(", ")}`,
+);
+
+for (const path of distFiles) {
+  const relativePath = relative(distPath, path).replaceAll("\\", "/");
+  const size = statSync(path).size;
+  assert(
+    size <= maximumAssetBytes,
+    `${relativePath} is ${size} bytes; individual assets must not exceed ${maximumAssetBytes} bytes`,
+  );
+}
+
+const sourceMapPaths = distRelativePaths.filter((path) =>
+  path.endsWith(".map"),
+);
+for (const sourceMapPath of sourceMapPaths) {
+  const contents = readDist(sourceMapPath);
+  assert(
+    !/tests\/fixtures|OPENSSH PRIVATE KEY|fixture-passphrase/u.test(contents),
+    `${sourceMapPath} contains disposable SSH fixture material`,
+  );
+}
+
+function firstPartyResourcePath(value, baseUrl, label) {
+  assert(
+    !value.startsWith("data:") && !value.startsWith("blob:"),
+    `${label} uses an embedded or blob runtime resource`,
+  );
+  const url = new URL(value, baseUrl);
+  assert(
+    url.origin === canonicalOrigin,
+    `${label} uses third-party origin ${url.origin}`,
+  );
+  assert(
+    url.search === "" && url.hash === "",
+    `${label} must use a stable local path`,
+  );
+  const path = decodeURIComponent(url.pathname).replace(/^\/+/u, "");
+  assert(path !== "" && !path.includes(".."), `${label} has an invalid path`);
+  return path;
+}
+
+const initialResourcePaths = new Set(["index.html"]);
+for (const element of indexDocument.querySelectorAll(
+  'script[src], link[rel="stylesheet"][href], link[rel="icon"][href], link[rel="manifest"][href], link[rel="preload"][href], link[rel="modulepreload"][href], img[src], source[src]',
+)) {
+  const attribute = element.hasAttribute("src") ? "src" : "href";
+  const value = element.getAttribute(attribute);
+  assert(value !== null, `runtime ${element.localName} resource is missing`);
+  initialResourcePaths.add(
+    firstPartyResourcePath(
+      value,
+      canonicalUrl,
+      `${element.localName}[${attribute}]`,
+    ),
+  );
+}
+
+for (const element of indexDocument.querySelectorAll("[srcset]")) {
+  for (const candidate of (element.getAttribute("srcset") ?? "").split(",")) {
+    const value = candidate.trim().split(/\s+/u)[0];
+    if (value !== undefined && value !== "") {
+      initialResourcePaths.add(
+        firstPartyResourcePath(
+          value,
+          canonicalUrl,
+          `${element.localName}[srcset]`,
+        ),
+      );
+    }
+  }
+}
+
+for (const stylesheetPath of [...initialResourcePaths].filter((path) =>
+  path.endsWith(".css"),
+)) {
+  const stylesheet = readDist(stylesheetPath);
+  const stylesheetUrl = new URL(
+    posix.join("/", dirname(stylesheetPath), "/"),
+    canonicalUrl,
+  );
+  for (const match of stylesheet.matchAll(/url\(\s*(['"]?)(.*?)\1\s*\)/gu)) {
+    const value = match[2];
+    if (value !== undefined) {
+      initialResourcePaths.add(
+        firstPartyResourcePath(value, stylesheetUrl, `${stylesheetPath} url()`),
+      );
+    }
+  }
+}
+
+const manifestPath = [...initialResourcePaths].find((path) =>
+  path.endsWith(".webmanifest"),
+);
+if (manifestPath !== undefined) {
+  const runtimeManifest = JSON.parse(readDist(manifestPath));
+  for (const icon of runtimeManifest.icons ?? []) {
+    initialResourcePaths.add(
+      firstPartyResourcePath(
+        icon.src,
+        new URL(`/${manifestPath}`, canonicalUrl),
+        `${manifestPath} icon`,
+      ),
+    );
+  }
+}
+
+for (const path of initialResourcePaths) {
+  assert(
+    statSync(resolve(distPath, path)).isFile(),
+    `initial runtime resource is missing: ${path}`,
+  );
+}
+
+const compressedJavaScriptBytes = gzipSync(
+  readFileSync(resolve(distPath, applicationScriptPath)),
+).length;
+assert(
+  compressedJavaScriptBytes <= maximumCompressedJavaScriptBytes,
+  `compressed first-party JavaScript is ${compressedJavaScriptBytes} bytes; budget is ${maximumCompressedJavaScriptBytes} bytes`,
+);
+
+const initialTransferBytes = [...initialResourcePaths].reduce(
+  (total, path) =>
+    total + gzipSync(readFileSync(resolve(distPath, path))).length,
+  0,
+);
+assert(
+  initialTransferBytes <= maximumInitialTransferBytes,
+  `compressed initial transfer is ${initialTransferBytes} bytes; budget is ${maximumInitialTransferBytes} bytes`,
 );
 
 const title = exactlyOne(indexDocument, "title", "title");
@@ -299,5 +452,11 @@ assert(
 );
 
 globalThis.console.log(
-  "dist assertions passed: HTML, metadata, JSON-LD, crawl files, source links, privacy copy, 404, and 1200×630 social card",
+  [
+    "dist assertions passed:",
+    "HTML/metadata/security/runtime-origin/source-map checks;",
+    `largest asset <= ${maximumAssetBytes / 1024} KiB;`,
+    `gzip JavaScript ${(compressedJavaScriptBytes / 1024).toFixed(1)} KiB <= ${maximumCompressedJavaScriptBytes / 1024} KiB;`,
+    `gzip initial transfer ${(initialTransferBytes / 1024).toFixed(1)} KiB <= ${maximumInitialTransferBytes / 1024} KiB`,
+  ].join(" "),
 );

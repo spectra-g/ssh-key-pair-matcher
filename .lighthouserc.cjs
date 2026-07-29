@@ -3,7 +3,8 @@ module.exports = {
     collect: {
       staticDistDir: "./dist",
       url: ["http://localhost/"],
-      numberOfRuns: 1,
+      // Lighthouse uses mobile emulation unless the desktop preset is set.
+      numberOfRuns: 3,
     },
     assert: {
       assertions: {

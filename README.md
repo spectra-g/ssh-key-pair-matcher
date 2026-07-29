@@ -5,10 +5,10 @@ OpenSSH private key belong to the same pair.
 
 The repository contains the reproducible Vite/TypeScript baseline, the
 browser-local matching engine, and the complete semantic matcher interaction
-from Steps 01–07. It includes the finished responsive light/dark visual system,
+from Steps 01–08. It includes the finished responsive light/dark visual system,
 self-hosted fonts, non-persistent theme control, deterministic visual baselines,
-crawlable technical guidance and metadata, privacy audits, and a static
-production security policy.
+crawlable technical guidance and metadata, privacy audits, a static production
+security policy, and exhaustive release quality gates.
 
 ## Privacy contract
 
@@ -111,8 +111,10 @@ Run the fast local and CI gate:
 npm run check
 ```
 
-It checks formatting, linting, strict TypeScript, 100% unit-test coverage, and
-the production build.
+It checks formatting, linting, strict TypeScript, 100% global and per-file unit
+test coverage, and the production build. Coverage includes every
+`src/**/*.ts` file, including unimported files, with no executable-file
+exclusions.
 
 Run all deterministic production-build checks:
 
@@ -120,11 +122,12 @@ Run all deterministic production-build checks:
 npm run verify
 ```
 
-This adds Chromium browser smoke, accessibility, privacy, and Lighthouse
-checks. Install the matching browser binary once with:
+This adds the complete Chromium, Firefox, and WebKit desktop/mobile browser
+matrix, stateful accessibility and privacy checks, and three mobile Lighthouse
+runs. Install the matching browser binaries once with:
 
 ```sh
-npx playwright install chromium
+npx playwright install chromium firefox webkit
 ```
 
 Individual scripts are available for focused work:
@@ -140,7 +143,15 @@ Individual scripts are available for focused work:
   persistence
 - `npm run test:lighthouse` — run local Lighthouse CI assertions
 - `npm run assert:dist` — validate production metadata, JSON-LD, crawl files,
-  source links, privacy copy, 404 page, and social-card dimensions
+  source links, privacy copy, runtime origins, executable files, source-map
+  hygiene, asset/transfer budgets, 404 page, and social-card dimensions
+
+The production artifact gate limits gzip-compressed first-party JavaScript to
+35 KiB, the gzip-compressed initial transfer to 180 KiB, and any individual
+asset to 100 KiB. It also rejects unexpected executable files and runtime
+third-party origins. Lighthouse uses its mobile defaults for three runs and
+requires Performance ≥95 plus Accessibility, Best Practices, and SEO at 100.
+Playwright retries are disabled so deterministic failures remain visible.
 
 Re-check the committed disposable SSH fixtures against the operating system's
 independent OpenSSH implementation:
