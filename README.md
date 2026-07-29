@@ -180,8 +180,11 @@ fingerprint comparison; MD5 is not a security recommendation.
 
 The semantic form in `index.html` is progressively enhanced by
 `src/ui/matcher-controller.ts`. Checking occurs only after explicit submission.
-Changing either input invalidates old results, while **Wipe keys**, `pagehide`,
-and back-forward-cache restoration clear the key fields and derived output.
+Each key can be pasted, selected with the keyboard-accessible file picker, or
+dropped directly onto its field. Selected files are read locally, limited by
+the same 64 KiB input cap, and never uploaded. Changing either input invalidates
+old results, while **Wipe keys**, `pagehide`, and back-forward-cache restoration
+clear the key fields and derived output.
 
 The initial theme follows `prefers-color-scheme`. The accessible theme control
 overrides only the current document, continues to follow live system changes

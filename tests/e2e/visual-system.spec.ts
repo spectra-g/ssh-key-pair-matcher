@@ -212,13 +212,19 @@ for (const colorScheme of themes) {
     await page.goto("/");
 
     const publicKey = page.getByRole("textbox", { name: "Public key" });
+    const publicFile = page.getByLabel("Choose public key file");
     const privateKey = page.getByRole("textbox", { name: "Private key" });
+    const privateFile = page.getByLabel("Choose private key file");
     const wipe = page.getByRole("button", { name: "Wipe keys" });
     const toggle = page.locator("#theme-toggle");
     await expect(publicKey).toBeFocused();
 
     await pressTab(page, browserName);
+    await expect(publicFile).toBeFocused();
+    await pressTab(page, browserName);
     await expect(privateKey).toBeFocused();
+    await pressTab(page, browserName);
+    await expect(privateFile).toBeFocused();
     await pressTab(page, browserName);
     await expect(wipe).toBeFocused();
 

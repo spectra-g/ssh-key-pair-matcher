@@ -161,6 +161,7 @@ body {
 }
 
 button,
+input,
 textarea {
   font: inherit;
 }
@@ -385,7 +386,7 @@ h1 span {
   gap: clamp(1rem, 2.5vw, 2rem);
 }
 
-.field + .field {
+.field {
   position: relative;
 }
 
@@ -427,6 +428,10 @@ label {
   margin: 0.15rem 0 0.45rem 1.75rem;
 }
 
+.file-drop-zone {
+  position: relative;
+}
+
 textarea {
   display: block;
   width: 100%;
@@ -447,6 +452,72 @@ textarea {
   transition:
     border-color 120ms ease,
     box-shadow 120ms ease;
+}
+
+.file-drop-zone__prompt {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--accent);
+  border-radius: 0.625rem;
+  background: color-mix(in srgb, var(--accent-soft) 94%, transparent);
+  color: var(--accent-strong);
+  font-size: 0.9rem;
+  font-weight: 760;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.file-drop-zone.is-dragging .file-drop-zone__prompt {
+  opacity: 1;
+}
+
+.file-drop-zone.is-dragging textarea {
+  border-color: var(--accent);
+}
+
+.file-picker-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.file-picker {
+  position: absolute;
+  top: -0.35rem;
+  right: 0;
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.5rem;
+  padding-inline: 0.7rem;
+  background: var(--surface-elevated);
+  color: var(--accent-strong);
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 740;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+.file-picker:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.file-picker-input:focus-visible + .file-picker {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
 }
 
 textarea::placeholder {
@@ -560,6 +631,12 @@ summary:focus-visible {
   background: var(--error-soft);
   color: var(--error);
   font-weight: 650;
+}
+
+.status[data-tone="info"]:not(:empty) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
 }
 
 .result {

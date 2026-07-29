@@ -1,6 +1,6 @@
 import { matchKeyPair } from "../core/match-key-pair";
 import { parsePrivateKey, parsePublicKey } from "../core/parse-key";
-import { KeyParseError } from "../core/types";
+import { KeyParseError, MAX_KEY_INPUT_BYTES } from "../core/types";
 import type { KeyMetadata, MatchResult } from "../core/types";
 
 type MatchKeyPair = (
@@ -8,10 +8,22 @@ type MatchKeyPair = (
   privateKeyText: string,
 ) => Promise<MatchResult>;
 
+interface KeyFileTarget {
+  readonly input: HTMLTextAreaElement;
+  readonly picker: HTMLInputElement;
+  readonly zone: HTMLElement;
+  readonly error: HTMLElement;
+  readonly label: string;
+}
+
 interface MatcherElements {
   readonly form: HTMLFormElement;
   readonly publicKey: HTMLTextAreaElement;
+  readonly publicKeyFile: HTMLInputElement;
+  readonly publicKeyDropZone: HTMLElement;
   readonly privateKey: HTMLTextAreaElement;
+  readonly privateKeyFile: HTMLInputElement;
+  readonly privateKeyDropZone: HTMLElement;
   readonly submit: HTMLButtonElement;
   readonly wipe: HTMLButtonElement;
   readonly submitHelp: HTMLElement;
@@ -56,7 +68,11 @@ function getElements(pageDocument: Document): MatcherElements {
   return {
     form: requiredElement(pageDocument, "#matcher-form"),
     publicKey: requiredElement(pageDocument, "#public-key"),
+    publicKeyFile: requiredElement(pageDocument, "#public-key-file"),
+    publicKeyDropZone: requiredElement(pageDocument, "#public-key-drop-zone"),
     privateKey: requiredElement(pageDocument, "#private-key"),
+    privateKeyFile: requiredElement(pageDocument, "#private-key-file"),
+    privateKeyDropZone: requiredElement(pageDocument, "#private-key-drop-zone"),
     submit: requiredElement(pageDocument, "#check-key-pair"),
     wipe: requiredElement(pageDocument, "#wipe-keys"),
     submitHelp: requiredElement(pageDocument, "#submit-help"),
@@ -111,11 +127,39 @@ export function initializeMatcher(
   if (pageWindow === null) {
     throw new Error("The matcher requires a browser window.");
   }
+  const FileReaderConstructor = pageWindow.FileReader;
 
   const elements = getElements(pageDocument);
   const runMatch = options.match ?? matchKeyPair;
   let revision = 0;
   let isChecking = false;
+  const resetFileTargets: Array<() => void> = [];
+  const fileTargets: readonly KeyFileTarget[] = [
+    {
+      input: elements.publicKey,
+      picker: elements.publicKeyFile,
+      zone: elements.publicKeyDropZone,
+      error: elements.publicError,
+      label: "public key",
+    },
+    {
+      input: elements.privateKey,
+      picker: elements.privateKeyFile,
+      zone: elements.privateKeyDropZone,
+      error: elements.privateError,
+      label: "private key",
+    },
+  ];
+
+  function setStatus(message: string, tone: "error" | "info"): void {
+    elements.status.textContent = message;
+    elements.status.dataset["tone"] = tone;
+  }
+
+  function clearStatus(): void {
+    elements.status.textContent = "";
+    delete elements.status.dataset["tone"];
+  }
 
   function updateSubmitState(): void {
     const hasBothKeys =
@@ -127,7 +171,7 @@ export function initializeMatcher(
       ? "Checking locally in this browser."
       : hasBothKeys
         ? "Ready to check locally. No keys will be uploaded."
-        : "Paste both keys to enable checking.";
+        : "Add both keys to enable checking.";
   }
 
   function clearErrors(): void {
@@ -163,7 +207,7 @@ export function initializeMatcher(
   function clearFeedback(): void {
     clearErrors();
     clearResult();
-    elements.status.textContent = "";
+    clearStatus();
   }
 
   function wipe(focusPublicKey: boolean): void {
@@ -171,6 +215,9 @@ export function initializeMatcher(
     isChecking = false;
     elements.publicKey.value = "";
     elements.privateKey.value = "";
+    for (const resetFileTarget of resetFileTargets) {
+      resetFileTarget();
+    }
     clearFeedback();
     updateSubmitState();
     if (focusPublicKey) {
@@ -186,6 +233,78 @@ export function initializeMatcher(
     input.setAttribute("aria-invalid", "true");
     message.textContent = error.message;
     message.hidden = false;
+  }
+
+  function showFileError(target: KeyFileTarget, message: string): void {
+    target.input.setAttribute("aria-invalid", "true");
+    target.error.textContent = message;
+    target.error.hidden = false;
+    setStatus(
+      `Fix the highlighted ${target.label} field and try again.`,
+      "error",
+    );
+  }
+
+  function readFile(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReaderConstructor();
+      const rejectRead = (): void => {
+        reject(new Error("The selected file could not be read."));
+      };
+      reader.addEventListener(
+        "load",
+        () => {
+          resolve(reader.result as string);
+        },
+        { once: true },
+      );
+      reader.addEventListener("error", rejectRead, { once: true });
+      reader.addEventListener("abort", rejectRead, { once: true });
+      reader.readAsText(file);
+    });
+  }
+
+  async function loadKeyFile(
+    target: KeyFileTarget,
+    files: readonly File[],
+  ): Promise<void> {
+    revision += 1;
+    const loadRevision = revision;
+    isChecking = false;
+    clearFeedback();
+    updateSubmitState();
+
+    if (files.length !== 1) {
+      showFileError(target, "Drop one key file at a time.");
+      target.input.focus();
+      return;
+    }
+
+    const file = files[0] as File;
+    if (file.size > MAX_KEY_INPUT_BYTES) {
+      showFileError(target, "The key file must be 64 KB or smaller.");
+      target.input.focus();
+      return;
+    }
+
+    setStatus(`Reading ${file.name} locally.`, "info");
+    try {
+      const contents = await readFile(file);
+      if (revision !== loadRevision) {
+        return;
+      }
+      target.input.value = contents;
+      clearFeedback();
+      updateSubmitState();
+      setStatus(`${file.name} loaded into the ${target.label} field.`, "info");
+      target.input.focus();
+    } catch {
+      if (revision !== loadRevision) {
+        return;
+      }
+      showFileError(target, "The key file could not be read.");
+      target.input.focus();
+    }
   }
 
   function validateFields(
@@ -237,10 +356,12 @@ export function initializeMatcher(
       for (const error of errors) {
         showFieldError(error);
       }
-      elements.status.textContent =
+      setStatus(
         errors.length === 1
           ? "Fix the highlighted key field and check again."
-          : "Fix both highlighted key fields and check again.";
+          : "Fix both highlighted key fields and check again.",
+        "error",
+      );
       const firstError = errors[0] as KeyParseError;
       (firstError.field === "public"
         ? elements.publicKey
@@ -266,8 +387,10 @@ export function initializeMatcher(
         return;
       }
       isChecking = false;
-      elements.status.textContent =
-        "The keys could not be checked. Wipe them and try again.";
+      setStatus(
+        "The keys could not be checked. Wipe them and try again.",
+        "error",
+      );
       updateSubmitState();
     }
   }
@@ -297,6 +420,87 @@ export function initializeMatcher(
     void handleSubmit(event);
   }
 
+  const removeFileListeners = fileTargets.map((target) => {
+    let dragDepth = 0;
+
+    function resetFileTarget(): void {
+      dragDepth = 0;
+      target.zone.classList.remove("is-dragging");
+      target.picker.value = "";
+    }
+
+    function hasFiles(event: DragEvent): boolean {
+      const transfer = event.dataTransfer;
+      if (!transfer) {
+        return false;
+      }
+      return (
+        transfer.files.length > 0 ||
+        Array.from(transfer.types).includes("Files")
+      );
+    }
+
+    function handleDragEnter(event: DragEvent): void {
+      if (!hasFiles(event)) {
+        return;
+      }
+      event.preventDefault();
+      dragDepth += 1;
+      target.zone.classList.add("is-dragging");
+    }
+
+    function handleDragOver(event: DragEvent): void {
+      if (!hasFiles(event)) {
+        return;
+      }
+      event.preventDefault();
+      (event.dataTransfer as DataTransfer).dropEffect = "copy";
+    }
+
+    function handleDragLeave(event: DragEvent): void {
+      if (!hasFiles(event)) {
+        return;
+      }
+      event.preventDefault();
+      dragDepth = Math.max(0, dragDepth - 1);
+      if (dragDepth === 0) {
+        target.zone.classList.remove("is-dragging");
+      }
+    }
+
+    function handleDrop(event: DragEvent): void {
+      if (!hasFiles(event)) {
+        return;
+      }
+      event.preventDefault();
+      dragDepth = 0;
+      target.zone.classList.remove("is-dragging");
+      const files = Array.from((event.dataTransfer as DataTransfer).files);
+      void loadKeyFile(target, files);
+    }
+
+    function handleFileSelection(): void {
+      const files = Array.from(target.picker.files as FileList);
+      target.picker.value = "";
+      void loadKeyFile(target, files);
+    }
+
+    target.zone.addEventListener("dragenter", handleDragEnter);
+    target.zone.addEventListener("dragover", handleDragOver);
+    target.zone.addEventListener("dragleave", handleDragLeave);
+    target.zone.addEventListener("drop", handleDrop);
+    target.picker.addEventListener("change", handleFileSelection);
+    resetFileTargets.push(resetFileTarget);
+
+    return (): void => {
+      target.zone.removeEventListener("dragenter", handleDragEnter);
+      target.zone.removeEventListener("dragover", handleDragOver);
+      target.zone.removeEventListener("dragleave", handleDragLeave);
+      target.zone.removeEventListener("drop", handleDrop);
+      target.picker.removeEventListener("change", handleFileSelection);
+    };
+  });
+
   elements.form.addEventListener("submit", handleFormSubmit);
   elements.publicKey.addEventListener("input", handleInput);
   elements.privateKey.addEventListener("input", handleInput);
@@ -309,6 +513,9 @@ export function initializeMatcher(
   return {
     wipe: handleWipe,
     destroy(): void {
+      for (const removeListeners of removeFileListeners) {
+        removeListeners();
+      }
       elements.form.removeEventListener("submit", handleFormSubmit);
       elements.publicKey.removeEventListener("input", handleInput);
       elements.privateKey.removeEventListener("input", handleInput);

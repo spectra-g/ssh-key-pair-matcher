@@ -113,6 +113,56 @@ test("@browser reports field errors and encrypted mismatches", async ({
   await expect(page.locator("#private-encrypted")).toHaveText("Yes");
 });
 
+test("@browser @privacy loads selected and dropped key files locally", async ({
+  page,
+}) => {
+  const remoteRequests: string[] = [];
+  page.on("request", (request) => {
+    const requestUrl = new URL(request.url());
+    if (requestUrl.origin !== "http://127.0.0.1:4173") {
+      remoteRequests.push(request.url());
+    }
+  });
+  await page.goto("/");
+  const publicText = fixture("ed25519-a.pub");
+  const privateText = fixture("ed25519-a");
+  const publicKey = page.getByRole("textbox", { name: "Public key" });
+  const privateKey = page.getByRole("textbox", { name: "Private key" });
+  const publicDropZone = page.locator("#public-key-drop-zone");
+  const dataTransfer = await page.evaluateHandle((contents) => {
+    const transfer = new DataTransfer();
+    transfer.items.add(
+      new File([contents], "id_ed25519.pub", { type: "text/plain" }),
+    );
+    return transfer;
+  }, publicText);
+
+  await publicDropZone.dispatchEvent("dragenter", { dataTransfer });
+  await expect(publicDropZone).toHaveClass(/is-dragging/);
+  await publicDropZone.dispatchEvent("drop", { dataTransfer });
+  await expect(publicDropZone).not.toHaveClass(/is-dragging/);
+  await expect(publicKey).toHaveValue(publicText);
+  await expect(page.getByRole("status")).toHaveText(
+    "id_ed25519.pub loaded into the public key field.",
+  );
+
+  await page.getByLabel("Choose private key file").setInputFiles({
+    name: "id_ed25519",
+    mimeType: "text/plain",
+    buffer: Buffer.from(privateText),
+  });
+  await expect(privateKey).toHaveValue(privateText);
+  await expect(page.getByRole("status")).toHaveText(
+    "id_ed25519 loaded into the private key field.",
+  );
+
+  await page.getByRole("button", { name: "Check key pair" }).click();
+  await expect(
+    page.getByRole("heading", { name: "These keys match" }),
+  ).toBeVisible();
+  expect(remoteRequests).toEqual([]);
+});
+
 test("@browser completes the matcher and wipe flow with the keyboard", async ({
   browserName,
   page,
@@ -126,8 +176,12 @@ test("@browser completes the matcher and wipe flow with the keyboard", async ({
   await expect(publicKey).toBeFocused();
   await publicKey.fill(fixture("rsa-2048-a.pub"));
   await pressTab(page, browserName);
+  await expect(page.getByLabel("Choose public key file")).toBeFocused();
+  await pressTab(page, browserName);
   await expect(privateKey).toBeFocused();
   await privateKey.fill(fixture("rsa-2048-a"));
+  await pressTab(page, browserName);
+  await expect(page.getByLabel("Choose private key file")).toBeFocused();
   await pressTab(page, browserName);
   await expect(check).toBeFocused();
   await page.keyboard.press("Enter");

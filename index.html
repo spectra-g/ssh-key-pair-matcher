@@ -183,8 +183,8 @@
           Check whether an <span>SSH public key</span> matches a private key
         </h1>
         <p class="hero__summary">
-          Paste an SSH public key and an OpenSSH private key to compare their
-          public components locally in your browser.
+          Paste or load an SSH public key and an OpenSSH private key to compare
+          their public components locally in your browser.
         </p>
       </section>
 
@@ -252,19 +252,34 @@
               <label for="public-key">Public key</label>
             </div>
             <p id="public-key-hint" class="field-hint">
-              Paste one OpenSSH public key line.
+              Paste, drop, or choose one OpenSSH public key file.
             </p>
-            <textarea
-              id="public-key"
-              rows="5"
-              placeholder="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5…"
-              spellcheck="false"
-              autocorrect="off"
-              autocapitalize="none"
-              autocomplete="off"
-              aria-describedby="public-key-hint public-key-error"
-              aria-invalid="false"
-            ></textarea>
+            <div id="public-key-drop-zone" class="file-drop-zone">
+              <textarea
+                id="public-key"
+                rows="5"
+                placeholder="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5…"
+                spellcheck="false"
+                autocorrect="off"
+                autocapitalize="none"
+                autocomplete="off"
+                aria-describedby="public-key-hint public-key-error"
+                aria-invalid="false"
+              ></textarea>
+              <span class="file-drop-zone__prompt" aria-hidden="true">
+                Drop public key file here
+              </span>
+            </div>
+            <input
+              id="public-key-file"
+              class="file-picker-input"
+              type="file"
+              aria-label="Choose public key file"
+              aria-describedby="public-key-hint"
+            />
+            <label class="file-picker" for="public-key-file">
+              Choose file
+            </label>
             <p
               id="public-key-error"
               class="field-error"
@@ -302,19 +317,34 @@
               <label for="private-key">Private key</label>
             </div>
             <p id="private-key-hint" class="field-hint">
-              Paste an OpenSSH private key, encrypted or unencrypted.
+              Paste, drop, or choose one OpenSSH private key file.
             </p>
-            <textarea
-              id="private-key"
-              rows="8"
-              placeholder="Paste the complete OpenSSH private key here"
-              spellcheck="false"
-              autocorrect="off"
-              autocapitalize="none"
-              autocomplete="new-password"
-              aria-describedby="private-key-hint private-key-error"
-              aria-invalid="false"
-            ></textarea>
+            <div id="private-key-drop-zone" class="file-drop-zone">
+              <textarea
+                id="private-key"
+                rows="8"
+                placeholder="Paste the complete OpenSSH private key here"
+                spellcheck="false"
+                autocorrect="off"
+                autocapitalize="none"
+                autocomplete="new-password"
+                aria-describedby="private-key-hint private-key-error"
+                aria-invalid="false"
+              ></textarea>
+              <span class="file-drop-zone__prompt" aria-hidden="true">
+                Drop private key file here
+              </span>
+            </div>
+            <input
+              id="private-key-file"
+              class="file-picker-input"
+              type="file"
+              aria-label="Choose private key file"
+              aria-describedby="private-key-hint"
+            />
+            <label class="file-picker" for="private-key-file">
+              Choose file
+            </label>
             <p
               id="private-key-error"
               class="field-error"
@@ -344,7 +374,7 @@
             </button>
           </div>
           <p id="submit-help" class="submit-help">
-            Paste both keys to enable checking.
+            Add both keys to enable checking.
           </p>
         </div>
       </form>
@@ -428,7 +458,7 @@
           <h2 id="how-it-works">How browser-local SSH key matching works</h2>
           <p>
             An SSH private key contains enough public information to identify
-            its pair. This tool parses the public key blob from each pasted
+            its pair. This tool parses the public key blob from each provided
             value, validates its structure, and compares the two blobs in this
             tab. It does not generate a signature, contact a server, or need
             access to the private key’s secret values.
@@ -633,10 +663,10 @@ ssh-keygen -lf ~/.ssh/id_ed25519.pub -E sha256</code></pre>
               </p>
             </details>
             <details>
-              <summary>Are pasted keys uploaded or saved?</summary>
+              <summary>Are provided keys uploaded or saved?</summary>
               <p>
                 No. Matching runs in this tab, and the application does not
-                upload or store the pasted values. Use Wipe keys when you are
+                upload or store the provided values. Use Wipe keys when you are
                 finished to clear the form and results from the tab.
               </p>
             </details>

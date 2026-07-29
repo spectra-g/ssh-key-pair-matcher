@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { fireEvent, screen, within } from "@testing-library/dom";
+import { fireEvent, screen, waitFor, within } from "@testing-library/dom";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -44,6 +44,21 @@ async function pasteKeys(
   await user.paste(publicKeyText);
   await user.click(screen.getByRole("textbox", { name: "Private key" }));
   await user.paste(privateKeyText);
+}
+
+function keyFile(name: string, contents: BlobPart): File {
+  return new File([contents], name, { type: "text/plain" });
+}
+
+function fileTransfer(
+  files: readonly File[],
+  types: readonly string[] = ["Files"],
+): DataTransfer {
+  return {
+    dropEffect: "none",
+    files,
+    types,
+  } as unknown as DataTransfer;
 }
 
 beforeEach(() => {
@@ -94,8 +109,16 @@ describe("matcher bootstrap and static form contract", () => {
       screen.getByRole("button", { name: "Check key pair" }),
     ).toBeDisabled();
     expect(
-      screen.getByText("Paste both keys to enable checking."),
+      screen.getByText("Add both keys to enable checking."),
     ).toHaveAttribute("id", "submit-help");
+    expect(screen.getByLabelText("Choose public key file")).toHaveAttribute(
+      "type",
+      "file",
+    );
+    expect(screen.getByLabelText("Choose private key file")).toHaveAttribute(
+      "type",
+      "file",
+    );
 
     controller.wipe();
     expect(publicKey).toHaveFocus();
@@ -293,6 +316,184 @@ describe("checking key pairs", () => {
   });
 });
 
+describe("local key file loading", () => {
+  it("loads both fields from keyboard-accessible file pickers", async () => {
+    start();
+    const publicText = fixture("ed25519-a.pub");
+    const privateText = fixture("ed25519-a");
+    const publicPicker = screen.getByLabelText("Choose public key file");
+    const privatePicker = screen.getByLabelText("Choose private key file");
+
+    fireEvent.change(publicPicker, {
+      target: { files: [keyFile("id_ed25519.pub", publicText)] },
+    });
+    await screen.findByText("id_ed25519.pub loaded into the public key field.");
+
+    fireEvent.change(privatePicker, {
+      target: { files: [keyFile("id_ed25519", privateText)] },
+    });
+    await screen.findByText("id_ed25519 loaded into the private key field.");
+
+    expect(screen.getByRole("textbox", { name: "Public key" })).toHaveValue(
+      publicText,
+    );
+    expect(screen.getByRole("textbox", { name: "Private key" })).toHaveValue(
+      privateText,
+    );
+    expect(privatePicker).toHaveValue("");
+    expect(screen.getByRole("status")).toHaveAttribute("data-tone", "info");
+    expect(
+      screen.getByRole("button", { name: "Check key pair" }),
+    ).toBeEnabled();
+
+    await userEvent
+      .setup()
+      .click(screen.getByRole("button", { name: "Check key pair" }));
+    expect(
+      await screen.findByRole("region", { name: "These keys match" }),
+    ).toBeVisible();
+  });
+
+  it("shows a stable drop target and loads a dropped file", async () => {
+    start();
+    const zone = document.querySelector("#public-key-drop-zone") as HTMLElement;
+    const nonFileTransfer = fileTransfer([], ["text/plain"]);
+
+    expect(fireEvent.dragEnter(zone, { dataTransfer: nonFileTransfer })).toBe(
+      true,
+    );
+    expect(fireEvent.dragEnter(zone)).toBe(true);
+    expect(fireEvent.dragOver(zone, { dataTransfer: nonFileTransfer })).toBe(
+      true,
+    );
+    expect(fireEvent.dragLeave(zone, { dataTransfer: nonFileTransfer })).toBe(
+      true,
+    );
+    expect(fireEvent.drop(zone, { dataTransfer: nonFileTransfer })).toBe(true);
+    expect(zone).not.toHaveClass("is-dragging");
+
+    const typeOnlyTransfer = fileTransfer([]);
+    expect(fireEvent.dragEnter(zone, { dataTransfer: typeOnlyTransfer })).toBe(
+      false,
+    );
+    expect(zone).toHaveClass("is-dragging");
+    fireEvent.dragEnter(zone, { dataTransfer: typeOnlyTransfer });
+    expect(fireEvent.dragOver(zone, { dataTransfer: typeOnlyTransfer })).toBe(
+      false,
+    );
+    expect(typeOnlyTransfer.dropEffect).toBe("copy");
+
+    fireEvent.dragLeave(zone, { dataTransfer: typeOnlyTransfer });
+    expect(zone).toHaveClass("is-dragging");
+    fireEvent.dragLeave(zone, { dataTransfer: typeOnlyTransfer });
+    expect(zone).not.toHaveClass("is-dragging");
+
+    const publicText = fixture("ed25519-a.pub");
+    fireEvent.drop(zone, {
+      dataTransfer: fileTransfer([keyFile("dropped.pub", publicText)]),
+    });
+
+    await screen.findByText("dropped.pub loaded into the public key field.");
+    expect(screen.getByRole("textbox", { name: "Public key" })).toHaveValue(
+      publicText,
+    );
+  });
+
+  it("rejects missing, multiple, and oversized file selections safely", () => {
+    start();
+    const publicPicker = screen.getByLabelText("Choose public key file");
+    const publicKey = screen.getByRole("textbox", { name: "Public key" });
+    const privatePicker = screen.getByLabelText("Choose private key file");
+    const privateKey = screen.getByRole("textbox", { name: "Private key" });
+
+    fireEvent.change(publicPicker, { target: { files: [] } });
+    expect(screen.getByText("Drop one key file at a time.")).toBeVisible();
+    expect(publicKey).toHaveAttribute("aria-invalid", "true");
+    expect(publicKey).toHaveFocus();
+
+    fireEvent.drop(document.querySelector("#public-key-drop-zone") as Element, {
+      dataTransfer: fileTransfer([
+        keyFile("one.pub", "one"),
+        keyFile("two.pub", "two"),
+      ]),
+    });
+    expect(screen.getByText("Drop one key file at a time.")).toBeVisible();
+
+    fireEvent.change(privatePicker, {
+      target: {
+        files: [keyFile("too-large", new Uint8Array(64 * 1024 + 1))],
+      },
+    });
+    expect(
+      screen.getByText("The key file must be 64 KB or smaller."),
+    ).toBeVisible();
+    expect(privateKey).toHaveAttribute("aria-invalid", "true");
+    expect(privateKey).toHaveFocus();
+    expect(screen.getByRole("status")).toHaveAttribute("data-tone", "error");
+  });
+
+  it("handles file read failures without exposing browser details", async () => {
+    start();
+    vi.spyOn(FileReader.prototype, "readAsText").mockImplementation(function (
+      this: FileReader,
+    ): void {
+      this.dispatchEvent(new ProgressEvent("error"));
+    });
+
+    fireEvent.change(screen.getByLabelText("Choose public key file"), {
+      target: { files: [keyFile("unreadable.pub", "sensitive contents")] },
+    });
+
+    expect(
+      await screen.findByText("The key file could not be read."),
+    ).toBeVisible();
+    expect(document.body).not.toHaveTextContent("sensitive contents");
+    expect(screen.getByRole("textbox", { name: "Public key" })).toHaveFocus();
+  });
+
+  it("ignores obsolete successful and failed file reads", async () => {
+    start();
+    const readSpy = vi
+      .spyOn(FileReader.prototype, "readAsText")
+      .mockImplementation(function (this: FileReader): void {
+        Object.defineProperty(this, "result", {
+          configurable: true,
+          value: "obsolete file contents",
+        });
+        queueMicrotask(() => {
+          this.dispatchEvent(new ProgressEvent("load"));
+        });
+      });
+    const publicKey = screen.getByRole("textbox", { name: "Public key" });
+
+    fireEvent.change(screen.getByLabelText("Choose public key file"), {
+      target: { files: [keyFile("slow.pub", "unused")] },
+    });
+    fireEvent.input(publicKey, { target: { value: "newer public input" } });
+    await waitFor(() => {
+      expect(publicKey).toHaveValue("newer public input");
+      expect(screen.getByRole("status")).toHaveTextContent("");
+    });
+
+    readSpy.mockImplementation(function (this: FileReader): void {
+      queueMicrotask(() => {
+        this.dispatchEvent(new ProgressEvent("error"));
+      });
+    });
+    const privateKey = screen.getByRole("textbox", { name: "Private key" });
+    fireEvent.change(screen.getByLabelText("Choose private key file"), {
+      target: { files: [keyFile("failing", "unused")] },
+    });
+    fireEvent.input(privateKey, { target: { value: "newer private input" } });
+    await waitFor(() => {
+      expect(privateKey).toHaveValue("newer private input");
+      expect(
+        screen.queryByText("The key file could not be read."),
+      ).not.toBeInTheDocument();
+    });
+  });
+});
+
 describe("wipe and lifecycle behavior", () => {
   it("wipes inputs, errors, results, announcements, and CSS state", async () => {
     const controller = start();
@@ -301,6 +502,13 @@ describe("wipe and lifecycle behavior", () => {
       .setup()
       .click(screen.getByRole("button", { name: "Check key pair" }));
     await screen.findByText("These keys match");
+    const privateDropZone = document.querySelector(
+      "#private-key-drop-zone",
+    ) as HTMLElement;
+    fireEvent.dragEnter(privateDropZone, {
+      dataTransfer: fileTransfer([]),
+    });
+    expect(privateDropZone).toHaveClass("is-dragging");
 
     controller.wipe();
 
@@ -315,6 +523,7 @@ describe("wipe and lifecycle behavior", () => {
     expect(screen.getByRole("form")).not.toHaveAttribute("data-result");
     expect(screen.getByRole("status")).toHaveTextContent("");
     expect(document.querySelector("#match-result")).not.toBeVisible();
+    expect(privateDropZone).not.toHaveClass("is-dragging");
   });
 
   it("wipes on pagehide and persisted pageshow only", () => {
@@ -353,8 +562,14 @@ describe("wipe and lifecycle behavior", () => {
     fireEvent.input(privateKey, { target: { value: fixture("ed25519-a") } });
 
     fireEvent.submit(screen.getByRole("form"));
+    fireEvent.drop(document.querySelector("#public-key-drop-zone") as Element, {
+      dataTransfer: fileTransfer([
+        keyFile("ignored.pub", fixture("ed25519-a.pub")),
+      ]),
+    });
     await Promise.resolve();
 
+    expect(publicKey).toHaveValue(fixture("ed25519-a.pub"));
     expect(screen.queryByText("These keys match")).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Check key pair" }),
@@ -410,7 +625,25 @@ describe("privacy guard", () => {
     );
 
     start();
-    await pasteKeys(fixture("ed25519-a.pub"), fixture("ed25519-a"));
+    fireEvent.change(screen.getByLabelText("Choose public key file"), {
+      target: {
+        files: [keyFile("privacy-test.pub", fixture("ed25519-a.pub"))],
+      },
+    });
+    await screen.findByText(
+      "privacy-test.pub loaded into the public key field.",
+    );
+    fireEvent.drop(
+      document.querySelector("#private-key-drop-zone") as Element,
+      {
+        dataTransfer: fileTransfer([
+          keyFile("privacy-test-key", fixture("ed25519-a")),
+        ]),
+      },
+    );
+    await screen.findByText(
+      "privacy-test-key loaded into the private key field.",
+    );
     await userEvent
       .setup()
       .click(screen.getByRole("button", { name: "Check key pair" }));
