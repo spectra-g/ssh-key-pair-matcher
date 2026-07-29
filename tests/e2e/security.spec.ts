@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
 const headerPreviewUrl = "http://127.0.0.1:4174";
-const canonicalUrl = "https://sshkeypairmatcher.com/";
+const canonicalUrl = "https://sshkeymatch.com/";
 const pagesUrl = "https://ssh-key-pair-matcher.pages.dev/";
 
 const requiredCspDirectives = [

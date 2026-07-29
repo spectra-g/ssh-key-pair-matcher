@@ -5,7 +5,7 @@ import { gzipSync } from "node:zlib";
 import { HtmlValidate } from "html-validate";
 import { JSDOM } from "jsdom";
 
-const canonicalUrl = "https://sshkeypairmatcher.com/";
+const canonicalUrl = "https://sshkeymatch.com/";
 const repositoryUrl = "https://github.com/spectra-g/ssh-key-pair-matcher";
 const expectedTitle =
   "SSH Key Pair Matcher — Check Public & Private Keys Locally";

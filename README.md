@@ -210,7 +210,7 @@ generated independently with `ssh-keygen`. Never authorize or reuse them.
 The public source repository is
 [spectra-g/ssh-key-pair-matcher](https://github.com/spectra-g/ssh-key-pair-matcher),
 and this clone uses it as `origin`.
-The canonical site URL is `https://sshkeypairmatcher.com/`.
+The canonical site URL is `https://sshkeymatch.com/`.
 
 ## License and security
 

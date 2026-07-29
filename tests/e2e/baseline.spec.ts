@@ -35,7 +35,7 @@ test("@browser serves and operates the semantic production matcher", async ({
   ).toBeVisible();
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     "href",
-    "https://sshkeypairmatcher.com/",
+    "https://sshkeymatch.com/",
   );
   const publicKey = page.getByRole("textbox", { name: "Public key" });
   const privateKey = page.getByRole("textbox", { name: "Private key" });

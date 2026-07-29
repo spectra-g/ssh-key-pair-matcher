@@ -69,7 +69,7 @@ test("@browser @seo production HTML is valid and has parseable structured data",
   expect(structuredData).toMatchObject({
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    url: "https://sshkeypairmatcher.com/",
+    url: "https://sshkeymatch.com/",
     codeRepository: repositoryUrl,
     applicationCategory: "UtilitiesApplication",
     isAccessibleForFree: true,
