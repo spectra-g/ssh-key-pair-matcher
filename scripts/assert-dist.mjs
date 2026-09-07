@@ -8,7 +8,7 @@ import { JSDOM } from "jsdom";
 const canonicalUrl = "https://sshkeymatch.com/";
 const repositoryUrl = "https://github.com/spectra-g/ssh-key-pair-matcher";
 const expectedTitle =
-  "SSH Key Pair Matcher — Check Public & Private Keys Locally";
+  "SSH Key Pair Matcher | Check Public & Private Keys Locally";
 const expectedDescription =
   "Check whether an SSH public key matches an OpenSSH private key. The comparison runs locally in your browser, with no uploads or storage.";
 const maximumCompressedJavaScriptBytes = 35 * 1024;
@@ -291,24 +291,44 @@ assert(
   structuredData["@context"] === "https://schema.org",
   "JSON-LD context is incorrect",
 );
-assert(
-  structuredData["@type"] === "WebApplication",
-  "JSON-LD type is incorrect",
+const structuredDataGraph = structuredData["@graph"];
+assert(Array.isArray(structuredDataGraph), "JSON-LD graph is missing");
+const websiteStructuredData = structuredDataGraph.find(
+  (entry) => entry["@type"] === "WebSite",
 );
-assert(structuredData.url === canonicalUrl, "JSON-LD URL is incorrect");
 assert(
-  structuredData.codeRepository === repositoryUrl,
+  websiteStructuredData?.name === "SSH Key Pair Matcher",
+  "WebSite name is incorrect",
+);
+assert(
+  websiteStructuredData?.alternateName === "sshkeymatch.com",
+  "WebSite alternate name is incorrect",
+);
+assert(websiteStructuredData?.url === canonicalUrl, "WebSite URL is incorrect");
+const applicationStructuredData = structuredDataGraph.find(
+  (entry) => entry["@type"] === "WebApplication",
+);
+assert(applicationStructuredData !== undefined, "JSON-LD type is incorrect");
+assert(
+  applicationStructuredData.url === canonicalUrl,
+  "WebApplication URL is incorrect",
+);
+assert(
+  applicationStructuredData.codeRepository === repositoryUrl,
   "JSON-LD repository URL is incorrect",
 );
 assert(
-  structuredData.applicationCategory === "UtilitiesApplication",
+  applicationStructuredData.applicationCategory === "UtilitiesApplication",
   "JSON-LD application category is incorrect",
 );
 assert(
-  structuredData.operatingSystem.includes("browser"),
+  applicationStructuredData.operatingSystem.includes("browser"),
   "JSON-LD operating system is inaccurate",
 );
-assert(structuredData.offers?.price === "0", "JSON-LD free price is missing");
+assert(
+  applicationStructuredData.offers?.price === "0",
+  "JSON-LD free price is missing",
+);
 
 const repositoryLinks = indexDocument.querySelectorAll(
   `a[href="${repositoryUrl}"]`,
@@ -320,17 +340,16 @@ assert(
 
 const visibleText = indexDocument.body.textContent?.replace(/\s+/gu, " ") ?? "";
 for (const requiredText of [
-  "Your keys never leave this browser",
-  "Local-only · No uploads · No storage",
-  "How browser-local SSH key matching works",
-  "Supported key types and formats",
-  "Check a key pair manually with ssh-keygen",
-  "What SSH fingerprints mean",
-  "Why encrypted OpenSSH private keys can be matched",
-  "Common parse and mismatch errors",
-  "Privacy and open-source design",
-  "How privacy is enforced",
-  "SSH key pair matcher FAQs",
+  "Local-only • No uploads • No storage",
+  "How it works",
+  "Supported formats",
+  "Check with ssh-keygen",
+  "Reading fingerprints",
+  "Encrypted private keys",
+  "Troubleshooting",
+  "public GitHub repository",
+  "Privacy",
+  "Common questions",
 ]) {
   assert(
     visibleText.includes(requiredText),

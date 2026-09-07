@@ -41,10 +41,7 @@ async function requiredAboveFoldElements(page: Page): Promise<Locator[]> {
       name: "Check whether an SSH public key matches a private key",
     }),
     page.locator(".hero__summary"),
-    page.getByRole("heading", {
-      level: 2,
-      name: "Your keys never leave this browser",
-    }),
+    page.getByLabel("Privacy guarantees"),
     page.locator('label[for="public-key"]'),
     page.getByRole("textbox", { name: "Public key" }),
     page.locator('label[for="private-key"]'),
@@ -236,4 +233,55 @@ for (const colorScheme of themes) {
       colorScheme === "dark" ? "light" : "dark",
     );
   });
+}
+
+for (const viewport of releaseViewports) {
+  for (const theme of themes) {
+    test(`@browser @layout @responsive lower-page ${viewport.name} ${theme}`, async ({
+      page,
+      browserName,
+    }, testInfo) => {
+      await page.setViewportSize(viewport);
+      await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
+      await page.goto("/");
+      await page.evaluate(() => document.fonts.ready);
+
+      const summaries = page.locator(".faq summary");
+      for (const summary of await summaries.all()) {
+        await summary.focus();
+        await page.keyboard.press("Enter");
+        await expect(summary.locator("..")).toHaveAttribute("open", "");
+        await expect(summary.locator("..").locator("p")).toBeVisible();
+        await page.keyboard.press("Enter");
+        await expect(summary.locator("..")).not.toHaveAttribute("open");
+      }
+
+      const commands = page.getByLabel("Manual ssh-keygen commands");
+      await commands.focus();
+      await expect(commands).toBeFocused();
+      await pressTab(page, browserName);
+      await expect(
+        page.getByRole("link", { name: "public GitHub repository" }),
+      ).toBeFocused();
+      await page.locator(".site-footer").scrollIntoViewIfNeeded();
+      await expect(
+        page.getByRole("navigation", { name: "Project links" }),
+      ).toBeInViewport();
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth),
+      ).toBe(viewport.width);
+
+      if (testInfo.project.name === "chromium-desktop") {
+        await page.locator(".guide").click({ position: { x: 1, y: 1 } });
+        await expect(page.locator(".guide")).toHaveScreenshot(
+          `guide-${viewport.name}-${theme}.png`,
+          { animations: "disabled" },
+        );
+        await expect(page.locator(".site-footer")).toHaveScreenshot(
+          `footer-${viewport.name}-${theme}.png`,
+          { animations: "disabled" },
+        );
+      }
+    });
+  }
 }

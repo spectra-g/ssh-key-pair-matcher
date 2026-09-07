@@ -16,27 +16,25 @@ test("@browser @seo exposes substantive matcher content without JavaScript", asy
       name: "Check whether an SSH public key matches a private key",
     }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("heading", {
-      name: "Your keys never leave this browser",
-    }),
-  ).toBeVisible();
+  await expect(page.getByLabel("Privacy guarantees")).toContainText(
+    "Local-only • No uploads • No storage",
+  );
   await expect(page.getByRole("textbox", { name: "Public key" })).toBeVisible();
   await expect(
     page.getByRole("textbox", { name: "Private key" }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", {
-      name: "Supported key types and formats",
+      name: "Supported formats",
     }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", {
-      name: "Check a key pair manually with ssh-keygen",
+      name: "Check with ssh-keygen",
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "SSH key pair matcher FAQs" }),
+    page.getByRole("heading", { name: "Common questions" }),
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Inspect the source code on GitHub" }),
@@ -66,19 +64,29 @@ test("@browser @seo production HTML is valid and has parseable structured data",
   )?.[1];
   expect(structuredDataSource).toBeDefined();
   const structuredData = JSON.parse(structuredDataSource ?? "{}");
-  expect(structuredData).toMatchObject({
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
+  expect(structuredData["@context"]).toBe("https://schema.org");
+  expect(structuredData["@graph"]).toContainEqual({
+    "@type": "WebSite",
+    "@id": "https://sshkeymatch.com/#website",
+    name: "SSH Key Pair Matcher",
+    alternateName: "sshkeymatch.com",
     url: "https://sshkeymatch.com/",
-    codeRepository: repositoryUrl,
-    applicationCategory: "UtilitiesApplication",
-    isAccessibleForFree: true,
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "USD",
-    },
   });
+  expect(structuredData["@graph"]).toContainEqual(
+    expect.objectContaining({
+      "@type": "WebApplication",
+      "@id": "https://sshkeymatch.com/#application",
+      url: "https://sshkeymatch.com/",
+      codeRepository: repositoryUrl,
+      applicationCategory: "UtilitiesApplication",
+      isAccessibleForFree: true,
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
+    }),
+  );
 });
 
 test("@browser @seo serves crawl, manifest, social, and noindex 404 assets", async ({

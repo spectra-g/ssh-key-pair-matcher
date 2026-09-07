@@ -30,9 +30,9 @@ test("@browser serves and operates the semantic production matcher", async ({
       name: "Check whether an SSH public key matches a private key",
     }),
   ).toBeVisible();
-  await expect(
-    page.getByText("Your keys never leave this browser"),
-  ).toBeVisible();
+  await expect(page.getByLabel("Privacy guarantees")).toContainText(
+    "Local-only • No uploads • No storage",
+  );
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     "href",
     "https://sshkeymatch.com/",

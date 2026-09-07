@@ -89,12 +89,9 @@ describe("matcher bootstrap and static form contract", () => {
     const controller = initializePage(document);
     controllers.push(controller);
 
-    expect(
-      screen.getByRole("heading", {
-        level: 2,
-        name: "Your keys never leave this browser",
-      }),
-    ).toBeVisible();
+    expect(screen.getByLabelText("Privacy guarantees")).toHaveTextContent(
+      "Local-only • No uploads • No storage",
+    );
     expect(form).not.toHaveAttribute("action");
     expect(form).toHaveAttribute("novalidate");
     expect(publicKey).toHaveAttribute("spellcheck", "false");
